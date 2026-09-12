@@ -82,7 +82,11 @@ npm install
 npm run dev        # local dev server
 npm run build      # typecheck + production build
 npm run preview    # serve the production build
+npm test           # unit tests (vitest + fake-indexeddb)
+npm run test:e2e   # browser tests (Playwright, builds first)
+npm run check      # both suites — run before pushing
 npm run icons      # regenerate PWA icons into public/
 ```
 
-Requires Node 22+ (via nvm: `nvm install --lts`).
+Requires Node 22+ (via nvm: `nvm install --lts`). Browser tests additionally
+need `npx playwright install chromium` once.
