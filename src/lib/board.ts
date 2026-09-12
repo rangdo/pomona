@@ -4,25 +4,8 @@ export const CELL = 40
 export const COLS = BOARD_W / CELL
 export const ROWS = BOARD_H / CELL
 
-export interface SizePreset {
-  key: 'S' | 'M' | 'L'
-  label: string
-  wCells: number
-  hCells: number
-}
-
-export const SIZE_PRESETS: SizePreset[] = [
-  { key: 'S', label: 'Small 2×2', wCells: 2, hCells: 2 },
-  { key: 'M', label: 'Medium 4×3', wCells: 4, hCells: 3 },
-  { key: 'L', label: 'Large 6×4', wCells: 6, hCells: 4 },
-]
-
-export function sizeKeyOf(w: number, h: number): 'S' | 'M' | 'L' {
-  const match = SIZE_PRESETS.find(
-    (p) => p.wCells * CELL === w && p.hCells * CELL === h,
-  )
-  return match?.key ?? 'M'
-}
+export const MAX_BED_W_CELLS = 16
+export const MAX_BED_H_CELLS = 10
 
 export const BED_COLORS: string[] = [
   'bg-lime-100 border-lime-300 text-lime-900',

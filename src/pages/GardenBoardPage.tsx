@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from '../lib/hooks'
 import { db, type Bed, type Plant } from '../db/db'
@@ -86,7 +86,12 @@ export function GardenBoardPage() {
   const bedDrag = useRef<BedDrag | null>(null)
   const trayDrag = useRef<{ plantId: string } | null>(null)
 
-  useEffect(() => {
+  const bedList = beds ?? []
+  const plantList = plants ?? []
+  const hasBoard = bedList.length > 0
+
+  useLayoutEffect(() => {
+    if (!hasBoard) return
     const el = wrapRef.current
     if (!el) return
     const update = () => setScale(Math.max(el.clientWidth / BOARD_W, 0.5))
@@ -94,12 +99,10 @@ export function GardenBoardPage() {
     const ro = new ResizeObserver(update)
     ro.observe(el)
     return () => ro.disconnect()
-  }, [])
+  }, [hasBoard])
 
   const s = scale || 0.4
 
-  const bedList = beds ?? []
-  const plantList = plants ?? []
   const unassigned = plantList.filter((p) => !p.bedId)
   const plantsOf = (bedId: string) => plantList.filter((p) => p.bedId === bedId)
   const pickerBed = pickerBedId ? bedList.find((b) => b.id === pickerBedId) : undefined

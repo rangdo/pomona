@@ -5,7 +5,6 @@ import {
   CELL,
   clampPos,
   defaultPlacement,
-  sizeKeyOf,
   snap,
 } from './board'
 
@@ -22,6 +21,11 @@ describe('defaultPlacement', () => {
   it('wraps to the next row when the row is full', () => {
     const rowBed = { x: 0, y: 0, w: BOARD_W, h: 2 * CELL }
     expect(defaultPlacement(2, 2, [rowBed])).toEqual({ x: 0, y: 2 * CELL })
+  })
+
+  it('handles arbitrary sizes beyond the old presets', () => {
+    const placed = defaultPlacement(4, 4, [{ x: 0, y: 0, w: 4 * CELL, h: 4 * CELL }])
+    expect(placed).toEqual({ x: 4 * CELL, y: 0 })
   })
 
   it('returns origin when the board is completely full', () => {
@@ -51,14 +55,5 @@ describe('snap', () => {
     expect(snap(19)).toBe(0)
     expect(snap(21)).toBe(CELL)
     expect(snap(60)).toBe(2 * CELL)
-  })
-})
-
-describe('sizeKeyOf', () => {
-  it('maps unit sizes back to preset keys', () => {
-    expect(sizeKeyOf(2 * CELL, 2 * CELL)).toBe('S')
-    expect(sizeKeyOf(4 * CELL, 3 * CELL)).toBe('M')
-    expect(sizeKeyOf(6 * CELL, 4 * CELL)).toBe('L')
-    expect(sizeKeyOf(123, 456)).toBe('M')
   })
 })
