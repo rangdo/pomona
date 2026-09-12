@@ -7,7 +7,9 @@ import {
   CELL,
   MAX_BED_H_CELLS,
   MAX_BED_W_CELLS,
+  cellsToCm,
   clampPos,
+  cmToCells,
   defaultPlacement,
 } from '../lib/board'
 import { useLiveQuery } from '../lib/hooks'
@@ -19,12 +21,16 @@ function Stepper({
   value,
   min,
   max,
+  step = 1,
+  suffix,
   onChange,
 }: {
   label: string
   value: number
   min: number
   max: number
+  step?: number
+  suffix?: string
   onChange: (v: number) => void
 }) {
   const btn =
@@ -37,17 +43,20 @@ function Stepper({
           type="button"
           aria-label={`Decrease ${label.toLowerCase()}`}
           disabled={value <= min}
-          onClick={() => onChange(value - 1)}
+          onClick={() => onChange(value - step)}
           className={btn}
         >
           −
         </button>
-        <span className="w-8 text-center text-lg font-bold tabular-nums">{value}</span>
+        <span className="w-14 text-center text-lg font-bold tabular-nums">
+          {value}
+          {suffix ? ` ${suffix}` : ''}
+        </span>
         <button
           type="button"
           aria-label={`Increase ${label.toLowerCase()}`}
           disabled={value >= max}
-          onClick={() => onChange(value + 1)}
+          onClick={() => onChange(value + step)}
           className={btn}
         >
           +
@@ -201,21 +210,26 @@ export function BedEditPage() {
           <div className="space-y-2">
             <Stepper
               label="Width"
-              value={wCells}
-              min={1}
-              max={MAX_BED_W_CELLS}
-              onChange={setWCells}
+              suffix="cm"
+              step={cellsToCm(1)}
+              value={cellsToCm(wCells)}
+              min={cellsToCm(1)}
+              max={cellsToCm(MAX_BED_W_CELLS)}
+              onChange={(cm) => setWCells(cmToCells(cm))}
             />
             <Stepper
               label="Height"
-              value={hCells}
-              min={1}
-              max={MAX_BED_H_CELLS}
-              onChange={setHCells}
+              suffix="cm"
+              step={cellsToCm(1)}
+              value={cellsToCm(hCells)}
+              min={cellsToCm(1)}
+              max={cellsToCm(MAX_BED_H_CELLS)}
+              onChange={(cm) => setHCells(cmToCells(cm))}
             />
           </div>
           <p className="mt-2 text-xs text-stone-400">
-            Currently {wCells} × {hCells} cells — any size, drag the bed to reposition.
+            1 grid square ≈ 25 cm — a 4 × 4 bed is 1 × 1 m. Currently{' '}
+            {cellsToCm(wCells)} × {cellsToCm(hCells)} cm.
           </p>
         </section>
 
