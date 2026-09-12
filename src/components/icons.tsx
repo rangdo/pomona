@@ -63,6 +63,15 @@ export function XIcon({ size = 18 }: { size?: number }) {
   )
 }
 
+export function MapIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+      <path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2-6-2Z" />
+      <path d="M9 4v14M15 6v14" />
+    </svg>
+  )
+}
+
 export function LeafIcon({ size = 28 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" {...base} strokeWidth={1.5}>

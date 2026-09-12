@@ -25,12 +25,14 @@ export function PlantEditPage() {
   const navigate = useNavigate()
 
   const existing = useLiveQuery(() => (id ? db.plants.get(id) : undefined), [id])
+  const beds = useLiveQuery(() => db.beds.toArray(), [])
 
   const [name, setName] = useState('')
   const [variety, setVariety] = useState('')
   const [species, setSpecies] = useState('')
   const [plantedDate, setPlantedDate] = useState('')
   const [location, setLocation] = useState('')
+  const [bedId, setBedId] = useState('')
   const [photo, setPhoto] = useState<NewPhoto | null>(null)
   const [hydrated, setHydrated] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -49,6 +51,7 @@ export function PlantEditPage() {
       setSpecies(existing.species ?? '')
       setPlantedDate(existing.plantedDate ?? '')
       setLocation(existing.location ?? '')
+      setBedId(existing.bedId ?? '')
       setHydrated(true)
     }
   }, [existing, editing, hydrated])
@@ -103,6 +106,7 @@ export function PlantEditPage() {
           species: species.trim() || undefined,
           plantedDate: plantedDate || undefined,
           location: location.trim() || undefined,
+          bedId: bedId || undefined,
           photoId,
           createdAt: existing?.createdAt ?? now,
         }
@@ -231,6 +235,21 @@ export function PlantEditPage() {
               onChange={(e) => setPlantedDate(e.target.value)}
               className={inputClass}
             />
+          </label>
+          <label className="block">
+            <span className={labelClass}>Bed (area)</span>
+            <select
+              value={bedId}
+              onChange={(e) => setBedId(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">— not placed on the map yet —</option>
+              {(beds ?? []).map((b) => (
+                <option key={b.id} value={b.id}>
+                  {b.name}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="block">
             <span className={labelClass}>Location</span>

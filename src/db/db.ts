@@ -9,6 +9,7 @@ export interface Plant {
   species?: string
   plantedDate?: string
   location?: string
+  bedId?: string
   photoId?: string
   createdAt: number
 }
@@ -44,19 +45,35 @@ export interface Tag {
   custom: 0 | 1
 }
 
-class PomonaDB extends Dexie {
+export interface Bed {
+  id: string
+  name: string
+  color: number
+  x: number
+  y: number
+  w: number
+  h: number
+  createdAt: number
+}
+
+export class PomonaDB extends Dexie {
   plants!: Table<Plant, string>
   observations!: Table<Observation, string>
   photos!: Table<Photo, string>
   tags!: Table<Tag, string>
+  beds!: Table<Bed, string>
 
-  constructor() {
-    super('pomona')
+  constructor(name = 'pomona') {
+    super(name)
     this.version(1).stores({
       plants: 'id, name, createdAt',
       observations: 'id, plantId, timestamp, [plantId+timestamp]',
       photos: 'id, takenAt',
       tags: 'id, category, [category+order]',
+    })
+    this.version(2).stores({
+      plants: 'id, name, createdAt, bedId',
+      beds: 'id, name, createdAt',
     })
   }
 }

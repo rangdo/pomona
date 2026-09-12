@@ -5,6 +5,8 @@ import { CapturePage } from './pages/CapturePage'
 import { PlantDetailPage } from './pages/PlantDetailPage'
 import { PlantEditPage } from './pages/PlantEditPage'
 import { ObservationEditPage } from './pages/ObservationEditPage'
+import { GardenBoardPage } from './pages/GardenBoardPage'
+import { BedEditPage } from './pages/BedEditPage'
 import { InstallBanner } from './components/InstallBanner'
 import { requestPersistentStorage } from './db/db'
 
@@ -24,6 +26,9 @@ export default function App() {
           <Route path="/plants/:id/edit" element={<PlantEditPage />} />
           <Route path="/plants/:id" element={<PlantDetailPage />} />
           <Route path="/observations/:id/edit" element={<ObservationEditPage />} />
+          <Route path="/map" element={<GardenBoardPage />} />
+          <Route path="/beds/new" element={<BedEditPage />} />
+          <Route path="/beds/:id/edit" element={<BedEditPage />} />
           <Route path="*" element={<HomePage />} />
         </Routes>
       </div>
