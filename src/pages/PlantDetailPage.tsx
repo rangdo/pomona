@@ -119,14 +119,23 @@ export function PlantDetailPage() {
                     <span className="text-sm font-semibold">
                       {formatDate(o.timestamp)}, {formatTime(o.timestamp)}
                     </span>
-                    <button
-                      type="button"
-                      aria-label="Delete observation"
-                      onClick={() => void deleteObs(o.id, o.photoId)}
-                      className="flex size-7 shrink-0 items-center justify-center rounded-full text-stone-300 active:bg-stone-100 active:text-rose-600"
-                    >
-                      <TrashIcon />
-                    </button>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Link
+                        to={`/observations/${o.id}/edit`}
+                        aria-label="Edit observation"
+                        className="flex size-7 items-center justify-center rounded-full text-stone-400 active:bg-stone-100 active:text-stone-700"
+                      >
+                        <PencilIcon />
+                      </Link>
+                      <button
+                        type="button"
+                        aria-label="Delete observation"
+                        onClick={() => void deleteObs(o.id, o.photoId)}
+                        className="flex size-7 items-center justify-center rounded-full text-stone-300 active:bg-stone-100 active:text-rose-600"
+                      >
+                        <TrashIcon />
+                      </button>
+                    </div>
                   </div>
                   {(o.parts.length > 0 || o.conditions.length > 0 || o.treatments.length > 0) && (
                     <div className="mt-1 flex flex-wrap gap-1">
