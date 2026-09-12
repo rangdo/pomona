@@ -14,6 +14,7 @@ interface BedDrag {
   startClientY: number
   origX: number
   origY: number
+  cur: { x: number; y: number }
 }
 
 function PlantChip({
@@ -88,7 +89,7 @@ export function GardenBoardPage() {
   useEffect(() => {
     const el = wrapRef.current
     if (!el) return
-    const update = () => setScale(el.clientWidth / BOARD_W)
+    const update = () => setScale(Math.max(el.clientWidth / BOARD_W, 0.5))
     update()
     const ro = new ResizeObserver(update)
     ro.observe(el)
@@ -114,6 +115,7 @@ export function GardenBoardPage() {
       startClientY: e.clientY,
       origX: bed.x,
       origY: bed.y,
+      cur: { x: bed.x, y: bed.y },
     }
     e.currentTarget.setPointerCapture(e.pointerId)
   }
@@ -123,21 +125,22 @@ export function GardenBoardPage() {
     if (!d || d.id !== bed.id) return
     const dx = (e.clientX - d.startClientX) / s
     const dy = (e.clientY - d.startClientY) / s
-    const p = clampPos(snap(d.origX + dx), snap(d.origY + dy), bed.w, bed.h)
-    setPreview((prev) => ({ ...prev, [bed.id]: p }))
+    d.cur = clampPos(snap(d.origX + dx), snap(d.origY + dy), bed.w, bed.h)
+    setPreview((prev) => ({ ...prev, [bed.id]: d.cur }))
   }
 
   async function onBedPointerUp(_e: React.PointerEvent<HTMLElement>, bed: Bed) {
+    const d = bedDrag.current
     bedDrag.current = null
-    const p = preview[bed.id]
+    const cur = d && d.id === bed.id ? d.cur : undefined
     setPreview((prev) => {
       const next = { ...prev }
       delete next[bed.id]
       return next
     })
-    if (p && (p.x !== bed.x || p.y !== bed.y)) {
+    if (cur && (cur.x !== bed.x || cur.y !== bed.y)) {
       try {
-        await db.beds.put({ ...bed, x: p.x, y: p.y })
+        await db.beds.put({ ...bed, x: cur.x, y: cur.y })
       } catch (err) {
         console.error(err)
         alert('Could not save the new position.')
@@ -240,7 +243,7 @@ export function GardenBoardPage() {
         <div className="p-3">
           <div
             ref={wrapRef}
-            className="overflow-x-auto rounded-2xl border border-stone-200 bg-stone-100"
+            className="overflow-auto rounded-2xl border border-stone-200 bg-stone-100"
           >
               <div
                 ref={boardRef}
@@ -262,13 +265,18 @@ export function GardenBoardPage() {
                     key={bed.id}
                     className={`absolute flex flex-col overflow-hidden rounded-xl border-2 ${colorCls} ${
                       arrange ? 'cursor-grab shadow-md active:cursor-grabbing' : 'shadow-sm'
-                    } ${hoverBedId === bed.id ? 'ring-4 ring-lime-600 ring-offset-2' : ''}`}
+                    } ${
+                      preview[bed.id] || hoverBedId === bed.id
+                        ? 'ring-4 ring-lime-600 ring-offset-2'
+                        : ''
+                    }`}
                     style={{
                       left: pos.x * s,
                       top: pos.y * s,
                       width: bed.w * s,
                       height: bed.h * s,
                       touchAction: arrange ? 'none' : 'auto',
+                      zIndex: preview[bed.id] ? 10 : undefined,
                     }}
                     onPointerDown={(e) => {
                       if (arrange) onBedPointerDown(e, bed)
@@ -297,7 +305,12 @@ export function GardenBoardPage() {
                         </Link>
                       )}
                     </header>
-                    <div className="flex min-h-0 flex-1 flex-wrap content-start items-start gap-1 overflow-y-auto p-1.5">
+                    <div
+                      className={`flex min-h-0 flex-1 flex-wrap content-start items-start gap-1 p-1.5 ${
+                        arrange ? 'overflow-hidden' : 'overflow-y-auto'
+                      }`}
+                      style={{ touchAction: arrange ? 'none' : 'auto' }}
+                    >
                       {plantsOf(bed.id).map((p) => (
                         <PlantChip key={p.id} plant={p} link={!arrange} scale={s} />
                       ))}
