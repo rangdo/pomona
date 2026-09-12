@@ -5,14 +5,57 @@ import { newId } from '../lib/ids'
 import {
   BED_COLORS,
   CELL,
-  SIZE_PRESETS,
+  MAX_BED_H_CELLS,
+  MAX_BED_W_CELLS,
   clampPos,
   defaultPlacement,
-  sizeKeyOf,
 } from '../lib/board'
 import { useLiveQuery } from '../lib/hooks'
 import { Header } from '../components/Header'
 import { inputClass, labelClass, primaryButtonClass, sectionClass } from '../components/styles'
+
+function Stepper({
+  label,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  label: string
+  value: number
+  min: number
+  max: number
+  onChange: (v: number) => void
+}) {
+  const btn =
+    'flex size-10 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-bold text-stone-700 active:bg-stone-200 disabled:opacity-40'
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-stone-200 px-3 py-2">
+      <span className="text-sm font-medium text-stone-600">{label}</span>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          aria-label={`Decrease ${label.toLowerCase()}`}
+          disabled={value <= min}
+          onClick={() => onChange(value - 1)}
+          className={btn}
+        >
+          −
+        </button>
+        <span className="w-8 text-center text-lg font-bold tabular-nums">{value}</span>
+        <button
+          type="button"
+          aria-label={`Increase ${label.toLowerCase()}`}
+          disabled={value >= max}
+          onClick={() => onChange(value + 1)}
+          className={btn}
+        >
+          +
+        </button>
+      </div>
+    </div>
+  )
+}
 
 export function BedEditPage() {
   const { id } = useParams()
@@ -24,7 +67,8 @@ export function BedEditPage() {
 
   const [name, setName] = useState('')
   const [color, setColor] = useState<number | null>(null)
-  const [size, setSize] = useState<'S' | 'M' | 'L'>('M')
+  const [wCells, setWCells] = useState(4)
+  const [hCells, setHCells] = useState(3)
   const [hydrated, setHydrated] = useState(false)
   const [saving, setSaving] = useState(false)
 
@@ -37,7 +81,8 @@ export function BedEditPage() {
     if (existing) {
       setName(existing.name)
       setColor(existing.color)
-      setSize(sizeKeyOf(existing.w, existing.h))
+      setWCells(Math.max(1, Math.round(existing.w / CELL)))
+      setHCells(Math.max(1, Math.round(existing.h / CELL)))
       setHydrated(true)
     }
   }, [existing, editing, hydrated])
@@ -48,16 +93,14 @@ export function BedEditPage() {
     }
   }, [beds, editing, color])
 
-  const preset = SIZE_PRESETS.find((p) => p.key === size) ?? SIZE_PRESETS[1]
-
   async function save() {
     const trimmed = name.trim()
     if (!trimmed || saving) return
     setSaving(true)
     try {
       if (editing && id && existing) {
-        const w = preset.wCells * CELL
-        const h = preset.hCells * CELL
+        const w = wCells * CELL
+        const h = hCells * CELL
         const pos = clampPos(existing.x, existing.y, w, h)
         await db.beds.put({
           ...existing,
@@ -70,8 +113,8 @@ export function BedEditPage() {
         })
       } else {
         const pos = defaultPlacement(
-          preset.wCells,
-          preset.hCells,
+          wCells,
+          hCells,
           (beds ?? []).map((b) => ({ x: b.x, y: b.y, w: b.w, h: b.h })),
         )
         await db.beds.add({
@@ -80,8 +123,8 @@ export function BedEditPage() {
           color: color ?? 0,
           x: pos.x,
           y: pos.y,
-          w: preset.wCells * CELL,
-          h: preset.hCells * CELL,
+          w: wCells * CELL,
+          h: hCells * CELL,
           createdAt: Date.now(),
         })
       }
@@ -155,27 +198,24 @@ export function BedEditPage() {
 
         <section className={sectionClass}>
           <span className={labelClass}>Size</span>
-          <div className="grid grid-cols-3 gap-2">
-            {SIZE_PRESETS.map((p) => (
-              <button
-                key={p.key}
-                type="button"
-                aria-pressed={size === p.key}
-                onClick={() => setSize(p.key)}
-                className={`min-h-11 rounded-xl border px-2 text-sm font-medium ${
-                  size === p.key
-                    ? 'border-lime-700 bg-lime-700 text-white'
-                    : 'border-stone-300 bg-white text-stone-700 active:bg-stone-200'
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
+          <div className="space-y-2">
+            <Stepper
+              label="Width"
+              value={wCells}
+              min={1}
+              max={MAX_BED_W_CELLS}
+              onChange={setWCells}
+            />
+            <Stepper
+              label="Height"
+              value={hCells}
+              min={1}
+              max={MAX_BED_H_CELLS}
+              onChange={setHCells}
+            />
           </div>
           <p className="mt-2 text-xs text-stone-400">
-            {editing
-              ? 'The bed keeps its spot — drag it around on the board.'
-              : 'Placed in the first free spot — drag it around on the board.'}
+            Currently {wCells} × {hCells} cells — any size, drag the bed to reposition.
           </p>
         </section>
 
