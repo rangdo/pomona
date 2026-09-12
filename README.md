@@ -18,6 +18,8 @@ hosted website is only a delivery mechanism for the app.
 - **Auto-captured metadata** — date/time from the camera EXIF, GPS if the
   camera tags it
 - **Timeline** — month-grouped history per plant, newest first
+- **Edit anything** — every observation can be corrected afterwards (date,
+  time, plant, photo, tags, harvest numbers, notes)
 - **Offline & installable** — PWA: install from the browser, works with no
   signal, data persisted via IndexedDB
 
