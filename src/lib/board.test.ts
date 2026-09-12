@@ -3,7 +3,9 @@ import {
   BOARD_H,
   BOARD_W,
   CELL,
+  cellsToCm,
   clampPos,
+  cmToCells,
   defaultPlacement,
   snap,
 } from './board'
@@ -55,5 +57,14 @@ describe('snap', () => {
     expect(snap(19)).toBe(0)
     expect(snap(21)).toBe(CELL)
     expect(snap(60)).toBe(2 * CELL)
+  })
+})
+
+describe('cm helpers', () => {
+  it('treats one grid square as 25 cm', () => {
+    expect(cellsToCm(1)).toBe(25)
+    expect(cellsToCm(4)).toBe(100)
+    expect(cmToCells(100)).toBe(4)
+    expect(cmToCells(cellsToCm(9))).toBe(9)
   })
 })

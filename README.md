@@ -12,9 +12,10 @@ hosted website is only a delivery mechanism for the app.
 
 - **Plants** — add each tree with name, variety, species, planted date,
   location and a photo
-- **Garden map** — split the garden into named beds on a schematic board;
-  drag beds into place, drop plants into them, tap a plant to open its
-  journal. Existing data is untouched (schema upgrades are additive)
+- **Garden map** — split the garden into named beds on a schematic board
+  (1 square ≈ 25 cm); drag beds into place, drop plants into them, tap a
+  plant to open its journal. Existing data is untouched (schema upgrades are
+  additive)
 - **Observations** — take a photo (or pick from gallery), tag the plant part
   (blossom, fruit, leaf…), condition (healthy, pest damage…), treatments
   (pruned, fertilized…), plus fruit count, harvest weight and notes

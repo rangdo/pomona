@@ -7,6 +7,16 @@ export const ROWS = BOARD_H / CELL
 export const MAX_BED_W_CELLS = 16
 export const MAX_BED_H_CELLS = 10
 
+export const CM_PER_CELL = 25
+
+export function cellsToCm(cells: number): number {
+  return cells * CM_PER_CELL
+}
+
+export function cmToCells(cm: number): number {
+  return cm / CM_PER_CELL
+}
+
 export const BED_COLORS: string[] = [
   'bg-lime-100 border-lime-300 text-lime-900',
   'bg-amber-100 border-amber-300 text-amber-900',
