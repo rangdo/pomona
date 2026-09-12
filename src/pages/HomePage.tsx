@@ -3,7 +3,7 @@ import { useLiveQuery } from '../lib/hooks'
 import { db } from '../db/db'
 import { relTime } from '../lib/time'
 import { PhotoThumb } from '../components/PhotoThumb'
-import { ChevronRightIcon, CameraIcon, PlusIcon } from '../components/icons'
+import { ChevronRightIcon, CameraIcon, PlusIcon, MapIcon } from '../components/icons'
 
 export function HomePage() {
   const plants = useLiveQuery(() => db.plants.orderBy('createdAt').toArray(), [])
@@ -23,12 +23,21 @@ export function HomePage() {
           <h1 className="text-2xl font-extrabold tracking-tight">Pomona</h1>
           <p className="text-xs text-stone-500">fruit tree journal</p>
         </div>
-        <Link
-          to="/plants/new"
-          className="flex min-h-10 items-center gap-1.5 rounded-full bg-lime-700 px-4 text-sm font-semibold text-white shadow-sm active:bg-lime-800"
-        >
-          <PlusIcon size={16} /> Plant
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/map"
+            aria-label="Garden map"
+            className="flex size-10 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-600 shadow-sm active:bg-stone-200"
+          >
+            <MapIcon />
+          </Link>
+          <Link
+            to="/plants/new"
+            className="flex min-h-10 items-center gap-1.5 rounded-full bg-lime-700 px-4 text-sm font-semibold text-white shadow-sm active:bg-lime-800"
+          >
+            <PlusIcon size={16} /> Plant
+          </Link>
+        </div>
       </header>
 
       {list === undefined && (
