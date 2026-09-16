@@ -30,7 +30,6 @@ test('full journal workflow: create, observe, edit, delete', async ({ page }) =>
   await page.getByLabel('Name *').fill('Test Plum')
   await page.getByLabel('Variety').fill('Victoria')
   await page.getByLabel('Species').fill('Plum')
-  await page.getByLabel('Location').fill('Test bed')
   await page.getByRole('button', { name: 'Save' }).click()
 
   await expect(page.getByRole('heading', { name: 'Test Plum' })).toBeVisible()

@@ -25,8 +25,8 @@ export function HomePage() {
         </div>
         <div className="flex items-center gap-2">
           <Link
-            to="/map"
-            aria-label="Garden map"
+            to="/locations"
+            aria-label="Locations"
             className="flex size-10 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-600 shadow-sm active:bg-stone-200"
           >
             <MapIcon />

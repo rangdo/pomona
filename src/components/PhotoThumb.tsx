@@ -22,6 +22,7 @@ export function PhotoThumb({
       <img
         src={url}
         alt=""
+        draggable={false}
         className={`bg-stone-200 object-cover ${className}`}
         style={style}
       />

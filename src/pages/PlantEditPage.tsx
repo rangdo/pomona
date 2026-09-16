@@ -25,14 +25,13 @@ export function PlantEditPage() {
   const navigate = useNavigate()
 
   const existing = useLiveQuery(() => (id ? db.plants.get(id) : undefined), [id])
-  const beds = useLiveQuery(() => db.beds.toArray(), [])
+  const locations = useLiveQuery(() => db.locations.toArray(), [])
 
   const [name, setName] = useState('')
   const [variety, setVariety] = useState('')
   const [species, setSpecies] = useState('')
   const [plantedDate, setPlantedDate] = useState('')
-  const [location, setLocation] = useState('')
-  const [bedId, setBedId] = useState('')
+  const [locationId, setLocationId] = useState('')
   const [photo, setPhoto] = useState<NewPhoto | null>(null)
   const [hydrated, setHydrated] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -50,8 +49,7 @@ export function PlantEditPage() {
       setVariety(existing.variety ?? '')
       setSpecies(existing.species ?? '')
       setPlantedDate(existing.plantedDate ?? '')
-      setLocation(existing.location ?? '')
-      setBedId(existing.bedId ?? '')
+      setLocationId(existing.locationId ?? '')
       setHydrated(true)
     }
   }, [existing, editing, hydrated])
@@ -105,8 +103,7 @@ export function PlantEditPage() {
           variety: variety.trim() || undefined,
           species: species.trim() || undefined,
           plantedDate: plantedDate || undefined,
-          location: location.trim() || undefined,
-          bedId: bedId || undefined,
+          locationId: locationId || undefined,
           photoId,
           createdAt: existing?.createdAt ?? now,
         }
@@ -237,28 +234,22 @@ export function PlantEditPage() {
             />
           </label>
           <label className="block">
-            <span className={labelClass}>Bed (area)</span>
+            <span className={labelClass}>Location</span>
             <select
-              value={bedId}
-              onChange={(e) => setBedId(e.target.value)}
+              value={locationId}
+              onChange={(e) => setLocationId(e.target.value)}
               className={inputClass}
             >
-              <option value="">— not placed on the map yet —</option>
-              {(beds ?? []).map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
+              <option value="">— not assigned yet —</option>
+              {(locations ?? []).map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
                 </option>
               ))}
             </select>
-          </label>
-          <label className="block">
-            <span className={labelClass}>Location</span>
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. South bed, by the fence"
-              className={inputClass}
-            />
+            <span className="mt-1 block text-xs text-stone-400">
+              Create locations from the Locations screen; pins are placed there too.
+            </span>
           </label>
         </section>
 
