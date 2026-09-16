@@ -8,8 +8,9 @@ export interface Plant {
   variety?: string
   species?: string
   plantedDate?: string
-  location?: string
-  bedId?: string
+  locationId?: string
+  pinX?: number
+  pinY?: number
   photoId?: string
   createdAt: number
 }
@@ -45,14 +46,11 @@ export interface Tag {
   custom: 0 | 1
 }
 
-export interface Bed {
+export interface Location {
   id: string
   name: string
   color: number
-  x: number
-  y: number
-  w: number
-  h: number
+  imagePhotoId?: string
   createdAt: number
 }
 
@@ -61,7 +59,7 @@ export class PomonaDB extends Dexie {
   observations!: Table<Observation, string>
   photos!: Table<Photo, string>
   tags!: Table<Tag, string>
-  beds!: Table<Bed, string>
+  locations!: Table<Location, string>
 
   constructor(name = 'pomona') {
     super(name)
@@ -75,6 +73,17 @@ export class PomonaDB extends Dexie {
       plants: 'id, name, createdAt, bedId',
       beds: 'id, name, createdAt',
     })
+    this.version(3)
+      .stores({
+        plants: 'id, name, createdAt, locationId',
+        beds: null,
+        locations: 'id, name, createdAt',
+      })
+      .upgrade(async (tx) => {
+        await tx.table('plants').toCollection().modify((plant) => {
+          delete plant.bedId
+        })
+      })
   }
 }
 

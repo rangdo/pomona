@@ -16,9 +16,9 @@ export function PlantDetailPage() {
   const { id = '' } = useParams()
 
   const plant = useLiveQuery(() => db.plants.get(id), [id])
-  const bed = useLiveQuery(
-    async () => (plant?.bedId ? await db.beds.get(plant.bedId) : undefined),
-    [plant?.bedId],
+  const location = useLiveQuery(
+    async () => (plant?.locationId ? await db.locations.get(plant.locationId) : undefined),
+    [plant?.locationId],
   )
   const observations = useLiveQuery(
     () => db.observations.where('plantId').equals(id).sortBy('timestamp'),
@@ -64,7 +64,7 @@ export function PlantDetailPage() {
     )
   }
 
-  const subtitleBits = [plant.variety, plant.species, bed?.name, plant.location].filter(
+  const subtitleBits = [plant.variety, plant.species, location?.name].filter(
     Boolean,
   )
   const plantedLine = plant.plantedDate
