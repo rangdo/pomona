@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { useLiveQuery } from '../lib/hooks'
 import { db } from '../db/db'
 import { relTime } from '../lib/time'
+import { plantLabel } from '../lib/plantMeta'
 import { PhotoThumb } from '../components/PhotoThumb'
 import { ChevronRightIcon, CameraIcon, PlusIcon, MapIcon } from '../components/icons'
 
@@ -71,10 +72,7 @@ export function HomePage() {
                 >
                   <PhotoThumb photoId={p.photoId} className="size-16 shrink-0 rounded-xl" />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-semibold">{p.name}</div>
-                    <div className="truncate text-sm text-stone-500">
-                      {p.variety || p.species || ' '}
-                    </div>
+                    <div className="truncate font-semibold">{plantLabel(p)}</div>
                     <div className="text-xs text-stone-400">
                       {last ? `last observed ${relTime(last)}` : 'no observations yet'}
                     </div>

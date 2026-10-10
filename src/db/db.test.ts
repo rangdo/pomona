@@ -28,8 +28,8 @@ describe('observation storage', () => {
     const plantA = newId()
     const plantB = newId()
     await db.plants.bulkAdd([
-      { id: plantA, name: 'Plum A', createdAt: Date.now() },
-      { id: plantB, name: 'Plum B', createdAt: Date.now() },
+      { id: plantA, species: 'Plum', variety: 'A', createdAt: Date.now() },
+      { id: plantB, species: 'Plum', variety: 'B', createdAt: Date.now() },
     ])
 
     const blob = new Blob(['fake-jpeg-bytes'], { type: 'image/jpeg' })
@@ -99,7 +99,7 @@ describe('observation storage', () => {
   it('cascades plant deletion to observations and photos', async () => {
     const plantId = newId()
     const photoId = newId()
-    await db.plants.add({ id: plantId, name: 'Doomed', createdAt: Date.now() })
+    await db.plants.add({ id: plantId, species: 'Plum', createdAt: Date.now() })
     await db.photos.add({
       id: photoId,
       blob: new Blob(['x']),

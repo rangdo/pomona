@@ -15,9 +15,9 @@ test('locations: create with image, assign plant, pin by drag, persist, unassign
   const photo = await makeTestPhoto()
 
   await page.goto('/#/plants/new')
-  await page.getByLabel('Name *').fill('Map Apple')
+  await page.getByLabel('Species *').selectOption('Apple')
   await page.getByRole('button', { name: 'Save' }).click()
-  await expect(page.getByRole('heading', { name: 'Map Apple' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Apple' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Back' }).click()
   await page.getByRole('link', { name: 'Locations' }).click()
@@ -35,7 +35,7 @@ test('locations: create with image, assign plant, pin by drag, persist, unassign
   await expect(page.locator('[data-testid="location-image"] img')).toBeVisible()
 
   await page.getByRole('button', { name: 'Back' }).click()
-  await page.getByRole('link', { name: /Map Apple/ }).click()
+  await page.getByRole('link', { name: /Apple/ }).click()
   await page.getByRole('link', { name: 'Edit plant' }).click()
   await page.getByLabel('Location').selectOption({ label: 'Back garden' })
   await page.getByRole('button', { name: 'Save' }).click()
@@ -47,7 +47,7 @@ test('locations: create with image, assign plant, pin by drag, persist, unassign
   await expect(page.locator('[data-testid="location-image"] img')).toBeVisible()
 
   await page.getByRole('button', { name: 'Arrange' }).click()
-  const chip = page.getByRole('button', { name: /Map Apple/ })
+  const chip = page.getByRole('button', { name: /Apple/ })
   const imgBox = await page.locator('[data-testid="location-image"]').boundingBox()
   const chipBox = await chip.boundingBox()
   await page.mouse.move(chipBox!.x + chipBox!.width / 2, chipBox!.y + chipBox!.height / 2)
@@ -57,7 +57,7 @@ test('locations: create with image, assign plant, pin by drag, persist, unassign
   })
   await page.mouse.up()
 
-  const pin = page.locator('[aria-label="Pin Map Apple"]')
+  const pin = page.locator('[aria-label="Pin Apple"]')
   await expect(pin).toBeVisible()
   const leftBefore = await pin.evaluate((el) => (el as HTMLElement).style.left)
   expect(parseFloat(leftBefore)).toBeCloseTo(40, 5)
@@ -81,8 +81,8 @@ test('locations: create with image, assign plant, pin by drag, persist, unassign
   const leftPersisted = await pin.evaluate((el) => (el as HTMLElement).style.left)
   expect(parseFloat(leftPersisted)).toBeCloseTo(parseFloat(leftAfter), 5)
 
-  await page.getByRole('link', { name: 'Pin Map Apple' }).click()
-  await expect(page.getByRole('heading', { name: 'Map Apple' })).toBeVisible()
+  await page.getByRole('link', { name: 'Pin Apple' }).click()
+  await expect(page.getByRole('heading', { name: 'Apple' })).toBeVisible()
 
   await page.getByRole('button', { name: 'Back' }).click()
   await page.getByRole('link', { name: 'Locations' }).click()
@@ -92,7 +92,7 @@ test('locations: create with image, assign plant, pin by drag, persist, unassign
   await page.getByRole('button', { name: 'Delete location' }).click()
   await expect(page.getByText('No locations yet')).toBeVisible()
 
-  await page.getByRole('link', { name: /Map Apple/ }).click()
+  await page.getByRole('link', { name: /Apple/ }).click()
   await page.getByRole('link', { name: 'Edit plant' }).click()
   await expect(page.getByLabel('Location')).toHaveValue('')
 })

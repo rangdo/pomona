@@ -2,12 +2,16 @@ import { Link } from 'react-router-dom'
 import { useLiveQuery } from '../lib/hooks'
 import { db } from '../db/db'
 import { AREA_COLORS } from '../lib/palette'
+import { plantLabel } from '../lib/plantMeta'
 import { PhotoThumb } from '../components/PhotoThumb'
 import { ChevronRightIcon, PlusIcon } from '../components/icons'
 
 export function LocationsPage() {
   const locations = useLiveQuery(() => db.locations.toArray(), [])
-  const plants = useLiveQuery(() => db.plants.orderBy('name').toArray(), [])
+  const plants = useLiveQuery(async () => {
+    const all = await db.plants.toArray()
+    return all.sort((a, b) => plantLabel(a).localeCompare(plantLabel(b)))
+  }, [])
 
   const list = locations ? [...locations].sort((a, b) => a.name.localeCompare(b.name)) : undefined
   const unassigned = (plants ?? []).filter((p) => !p.locationId)
@@ -101,7 +105,7 @@ export function LocationsPage() {
                 className="flex max-w-full items-center gap-1.5 rounded-full border border-stone-300 bg-white py-0.5 pl-0.5 pr-3 text-xs font-medium shadow-sm active:bg-stone-100"
               >
                 <PhotoThumb photoId={p.photoId} className="size-5 rounded-full" />
-                <span className="truncate">{p.name}</span>
+                <span className="truncate">{plantLabel(p)}</span>
               </Link>
             ))}
           </div>

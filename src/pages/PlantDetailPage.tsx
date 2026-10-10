@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from '../lib/hooks'
 import { db, type Observation } from '../db/db'
 import { formatDate, formatTime, monthKey, monthLabel } from '../lib/time'
+import { plantLabel, harvestLabel } from '../lib/plantMeta'
 import { Header } from '../components/Header'
 import { PhotoThumb } from '../components/PhotoThumb'
 import { ChipLabel } from '../components/Chips'
@@ -64,18 +65,21 @@ export function PlantDetailPage() {
     )
   }
 
-  const subtitleBits = [plant.variety, plant.species, location?.name].filter(
-    Boolean,
-  )
   const plantedLine = plant.plantedDate
     ? `planted ${new Date(plant.plantedDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}`
     : undefined
+  const harvest = harvestLabel(plant)
+  const facts: Array<[string, string]> = [
+    ['Harvest', harvest],
+    ['Pollination', plant.pollination],
+    ['Fruits on', plant.fruitingHabit],
+  ].filter((pair): pair is [string, string] => Boolean(pair[1]))
 
   return (
     <>
       <Header
-        title={plant.name}
-        subtitle={subtitleBits.length > 0 ? subtitleBits.join(' · ') : undefined}
+        title={plantLabel(plant)}
+        subtitle={location?.name}
         backTo="/"
         right={
           <Link
@@ -87,6 +91,21 @@ export function PlantDetailPage() {
           </Link>
         }
       />
+
+      {facts.length > 0 && (
+        <section className="mx-3 mt-3 rounded-2xl border border-stone-200 bg-white p-4 shadow-sm">
+          <dl className="space-y-1.5">
+            {facts.map(([label, value]) => (
+              <div key={label} className="flex items-baseline gap-3">
+                <dt className="w-24 shrink-0 text-xs uppercase tracking-wide text-stone-400">
+                  {label}
+                </dt>
+                <dd className="text-sm font-medium text-stone-700">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      )}
 
       {plantedLine && (
         <p className="px-4 pt-3 text-xs text-stone-400">{plantedLine}</p>

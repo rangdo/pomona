@@ -4,9 +4,12 @@ export type TagCategory = 'part' | 'condition' | 'treatment'
 
 export interface Plant {
   id: string
-  name: string
+  species: string
   variety?: string
-  species?: string
+  harvestStart?: number
+  harvestEnd?: number
+  pollination?: string
+  fruitingHabit?: string
   plantedDate?: string
   locationId?: string
   pinX?: number
@@ -82,6 +85,15 @@ export class PomonaDB extends Dexie {
       .upgrade(async (tx) => {
         await tx.table('plants').toCollection().modify((plant) => {
           delete plant.bedId
+        })
+      })
+    this.version(4)
+      .stores({
+        plants: 'id, species, createdAt, locationId',
+      })
+      .upgrade(async (tx) => {
+        await tx.table('plants').toCollection().modify((plant) => {
+          delete plant.name
         })
       })
   }
