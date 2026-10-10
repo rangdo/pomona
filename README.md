@@ -10,8 +10,12 @@ hosted website is only a delivery mechanism for the app.
 
 ## Features (Phase 1)
 
-- **Plants** — add each tree with name, variety, species, planted date and a
-  photo
+- **Plants** — identified by **species** (tap-friendly picklist: Apple, Plum,
+  Cherry…) plus an optional **variety**; labels read like "Apple · Bramley"
+- **Variety details** — harvest period (month range), pollination
+  (self-fertile, partial, needs a partner, triploid) and fruiting habit
+  (spur or tip bearing) — all shown on the plant page and ready for later
+  analysis
 - **Locations & pins** — name the areas of your garden ("Back garden",
   "Allotment"…), give each one a photo, assign plants to them and pin plants
   onto the photo by dragging. Pins are optional; plants can live in the

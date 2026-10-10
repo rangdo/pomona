@@ -7,9 +7,9 @@ beforeAll(async () => {
   await db.open()
 })
 
-describe('v2 → v3 migration', () => {
-  it('deletes beds, strips bedId, preserves plants and observations', async () => {
-    const name = 'pomona-migration-v3-test'
+describe('v2 → v4 migration', () => {
+  it('deletes beds, strips bedId and name, preserves plants and observations', async () => {
+    const name = 'pomona-migration-v4-test'
     const legacy = new Dexie(name)
     legacy.version(1).stores({
       plants: 'id, name, createdAt',
@@ -55,8 +55,9 @@ describe('v2 → v3 migration', () => {
     await upgraded.open()
 
     const plant = await upgraded.plants.get('p1')
-    expect(plant?.name).toBe('Old Plum')
+    expect(plant && 'name' in plant).toBe(false)
     expect(plant?.variety).toBe('Victoria')
+    expect(plant?.species).toBeUndefined()
     expect(plant && 'bedId' in plant).toBe(false)
 
     expect(upgraded.tables.map((t) => t.name)).not.toContain('beds')
@@ -92,7 +93,7 @@ describe('location deletion', () => {
     })
     await db.plants.add({
       id: plantId,
-      name: 'Pinned plum',
+      species: 'Plum',
       locationId,
       pinX: 0.5,
       pinY: 0.5,
@@ -109,7 +110,7 @@ describe('location deletion', () => {
     })
 
     const plant = await db.plants.get(plantId)
-    expect(plant?.name).toBe('Pinned plum')
+    expect(plant?.species).toBe('Plum')
     expect(plant?.locationId).toBeUndefined()
     expect(plant?.pinX).toBeUndefined()
     expect(plant?.pinY).toBeUndefined()

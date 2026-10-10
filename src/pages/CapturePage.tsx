@@ -16,6 +16,7 @@ import {
 } from '../components/styles'
 import { CameraIcon } from '../components/icons'
 import { formatDate, formatTime } from '../lib/time'
+import { plantLabel } from '../lib/plantMeta'
 
 interface Prepared {
   full: Blob
@@ -45,7 +46,10 @@ export function CapturePage() {
   const { plantId: paramPlantId } = useParams()
   const navigate = useNavigate()
 
-  const plants = useLiveQuery(() => db.plants.orderBy('name').toArray(), [])
+  const plants = useLiveQuery(async () => {
+    const all = await db.plants.toArray()
+    return all.sort((a, b) => plantLabel(a).localeCompare(plantLabel(b)))
+  }, [])
   const partTags = useLiveQuery(
     () => db.tags.where('category').equals('part').sortBy('order'),
     [],
@@ -207,8 +211,7 @@ export function CapturePage() {
               <option value="">Select a plant…</option>
               {plants?.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name}
-                  {p.variety ? ` (${p.variety})` : ''}
+                  {plantLabel(p)}
                 </option>
               ))}
             </select>

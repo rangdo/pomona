@@ -7,6 +7,13 @@ import { useLiveQuery } from '../lib/hooks'
 import { Header } from '../components/Header'
 import { PhotoThumb } from '../components/PhotoThumb'
 import {
+  FRUITING_HABITS,
+  MONTHS,
+  POLLINATION_OPTIONS,
+  SPECIES,
+  plantLabel,
+} from '../lib/plantMeta'
+import {
   inputClass,
   labelClass,
   primaryButtonClass,
@@ -27,9 +34,12 @@ export function PlantEditPage() {
   const existing = useLiveQuery(() => (id ? db.plants.get(id) : undefined), [id])
   const locations = useLiveQuery(() => db.locations.toArray(), [])
 
-  const [name, setName] = useState('')
-  const [variety, setVariety] = useState('')
   const [species, setSpecies] = useState('')
+  const [variety, setVariety] = useState('')
+  const [harvestFrom, setHarvestFrom] = useState('')
+  const [harvestTo, setHarvestTo] = useState('')
+  const [pollination, setPollination] = useState('')
+  const [fruitingHabit, setFruitingHabit] = useState('')
   const [plantedDate, setPlantedDate] = useState('')
   const [locationId, setLocationId] = useState('')
   const [photo, setPhoto] = useState<NewPhoto | null>(null)
@@ -45,9 +55,14 @@ export function PlantEditPage() {
       return
     }
     if (existing) {
-      setName(existing.name)
-      setVariety(existing.variety ?? '')
       setSpecies(existing.species ?? '')
+      setVariety(existing.variety ?? '')
+      setHarvestFrom(
+        existing.harvestStart !== undefined ? String(existing.harvestStart) : '',
+      )
+      setHarvestTo(existing.harvestEnd !== undefined ? String(existing.harvestEnd) : '')
+      setPollination(existing.pollination ?? '')
+      setFruitingHabit(existing.fruitingHabit ?? '')
       setPlantedDate(existing.plantedDate ?? '')
       setLocationId(existing.locationId ?? '')
       setHydrated(true)
@@ -77,9 +92,12 @@ export function PlantEditPage() {
     setPhoto(null)
   }
 
+  const harvestPairOk =
+    (harvestFrom === '' && harvestTo === '') || (harvestFrom !== '' && harvestTo !== '')
+  const canSave = species !== '' && harvestPairOk && !saving
+
   async function save() {
-    const trimmedName = name.trim()
-    if (!trimmedName || saving) return
+    if (!canSave) return
     setSaving(true)
     try {
       const now = Date.now()
@@ -99,9 +117,12 @@ export function PlantEditPage() {
         }
         const plant: Plant = {
           id: plantId,
-          name: trimmedName,
+          species,
           variety: variety.trim() || undefined,
-          species: species.trim() || undefined,
+          harvestStart: harvestFrom === '' ? undefined : Number(harvestFrom),
+          harvestEnd: harvestTo === '' ? undefined : Number(harvestTo),
+          pollination: pollination || undefined,
+          fruitingHabit: fruitingHabit || undefined,
           plantedDate: plantedDate || undefined,
           locationId: locationId || undefined,
           photoId,
@@ -147,7 +168,7 @@ export function PlantEditPage() {
     <>
       <Header
         title={editing ? 'Edit plant' : 'Add plant'}
-        subtitle={editing ? existing?.name : 'new to the journal'}
+        subtitle={editing ? (existing ? plantLabel(existing) : undefined) : 'new to the journal'}
         backTo={editing && id ? `/plants/${id}` : '/'}
       />
 
@@ -198,13 +219,19 @@ export function PlantEditPage() {
 
         <section className={`${sectionClass} space-y-3`}>
           <label className="block">
-            <span className={labelClass}>Name *</span>
-            <input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Backyard plum"
+            <span className={labelClass}>Species *</span>
+            <select
+              value={species}
+              onChange={(e) => setSpecies(e.target.value)}
               className={inputClass}
-            />
+            >
+              <option value="">Choose species…</option>
+              {SPECIES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
           </label>
           <label className="block">
             <span className={labelClass}>Variety</span>
@@ -215,15 +242,81 @@ export function PlantEditPage() {
               className={inputClass}
             />
           </label>
+        </section>
+
+        <section className={`${sectionClass} space-y-3`}>
+          <span className={labelClass}>Harvest period</span>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="block">
+              <span className="text-xs text-stone-500">From</span>
+              <select
+                value={harvestFrom}
+                onChange={(e) => setHarvestFrom(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">—</option>
+                {MONTHS.map((m, i) => (
+                  <option key={m} value={i}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="text-xs text-stone-500">To</span>
+              <select
+                value={harvestTo}
+                onChange={(e) => setHarvestTo(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">—</option>
+                {MONTHS.map((m, i) => (
+                  <option key={m} value={i}>
+                    {m}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          {!harvestPairOk && (
+            <p className="text-xs text-rose-600">Pick both months, or neither.</p>
+          )}
           <label className="block">
-            <span className={labelClass}>Species</span>
-            <input
-              value={species}
-              onChange={(e) => setSpecies(e.target.value)}
-              placeholder="e.g. Plum"
+            <span className={labelClass}>Pollination</span>
+            <select
+              value={pollination}
+              onChange={(e) => setPollination(e.target.value)}
               className={inputClass}
-            />
+            >
+              <option value="">— not set —</option>
+              {POLLINATION_OPTIONS.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
           </label>
+          <label className="block">
+            <span className={labelClass}>Fruits on</span>
+            <select
+              value={fruitingHabit}
+              onChange={(e) => setFruitingHabit(e.target.value)}
+              className={inputClass}
+            >
+              <option value="">— not set —</option>
+              {FRUITING_HABITS.map((f) => (
+                <option key={f} value={f}>
+                  {f}
+                </option>
+              ))}
+            </select>
+            <span className="mt-1 block text-xs text-stone-400">
+              Spur or tip — where this tree produces its fruit.
+            </span>
+          </label>
+        </section>
+
+        <section className={`${sectionClass} space-y-3`}>
           <label className="block">
             <span className={labelClass}>Planted date</span>
             <input
@@ -257,7 +350,7 @@ export function PlantEditPage() {
           <button
             type="button"
             onClick={() => void save()}
-            disabled={!name.trim() || saving}
+            disabled={!canSave}
             className={`${primaryButtonClass} flex-1`}
           >
             {saving ? 'Saving…' : 'Save'}

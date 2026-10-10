@@ -7,6 +7,7 @@ import { useLiveQuery } from '../lib/hooks'
 import { Header } from '../components/Header'
 import { PhotoThumb } from '../components/PhotoThumb'
 import { ChipPicker } from '../components/Chips'
+import { plantLabel } from '../lib/plantMeta'
 import {
   inputClass,
   labelClass,
@@ -51,7 +52,10 @@ export function ObservationEditPage() {
   const navigate = useNavigate()
 
   const obs = useLiveQuery(() => db.observations.get(id), [id])
-  const plants = useLiveQuery(() => db.plants.orderBy('name').toArray(), [])
+  const plants = useLiveQuery(async () => {
+    const all = await db.plants.toArray()
+    return all.sort((a, b) => plantLabel(a).localeCompare(plantLabel(b)))
+  }, [])
   const partTags = useLiveQuery(
     () => db.tags.where('category').equals('part').sortBy('order'),
     [],
@@ -217,8 +221,7 @@ export function ObservationEditPage() {
               <option value="">Select a plant…</option>
               {plants?.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.name}
-                  {p.variety ? ` (${p.variety})` : ''}
+                  {plantLabel(p)}
                 </option>
               ))}
             </select>

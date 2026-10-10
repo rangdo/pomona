@@ -27,17 +27,16 @@ test('full journal workflow: create, observe, edit, delete', async ({ page }) =>
   await page.getByRole('link', { name: 'Add your first plant' }).click()
   await expect(page.getByRole('heading', { name: 'Add plant' })).toBeVisible()
 
-  await page.getByLabel('Name *').fill('Test Plum')
+  await page.getByLabel('Species *').selectOption('Plum')
   await page.getByLabel('Variety').fill('Victoria')
-  await page.getByLabel('Species').fill('Plum')
   await page.getByRole('button', { name: 'Save' }).click()
 
-  await expect(page.getByRole('heading', { name: 'Test Plum' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Plum · Victoria' })).toBeVisible()
   await expect(page.getByText('No observations yet')).toBeVisible()
 
   await page.getByRole('link', { name: /New observation/i }).click()
   await expect(page.getByRole('heading', { name: 'New observation' })).toBeVisible()
-  await expect(page.getByLabel('Plant')).toContainText('Test Plum')
+  await expect(page.getByLabel('Plant')).toContainText('Plum · Victoria')
 
   const [chooser] = await Promise.all([
     page.waitForEvent('filechooser'),
@@ -54,7 +53,7 @@ test('full journal workflow: create, observe, edit, delete', async ({ page }) =>
   await page.getByPlaceholder('Anything worth remembering…').fill('first crop')
   await page.getByRole('button', { name: 'Save', exact: true }).click()
 
-  await expect(page.getByRole('heading', { name: 'Test Plum' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Plum · Victoria' })).toBeVisible()
   const entry = page.locator('li').filter({ hasText: 'first crop' })
   await expect(entry).toBeVisible()
   await expect(entry).toContainText('24 fruit')
