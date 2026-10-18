@@ -27,7 +27,8 @@ test('full journal workflow: create, observe, edit, delete', async ({ page }) =>
   await page.getByRole('link', { name: 'Add your first plant' }).click()
   await expect(page.getByRole('heading', { name: 'Add plant' })).toBeVisible()
 
-  await page.getByLabel('Species *').selectOption('Plum')
+  await page.getByRole('button', { name: 'Choose species…' }).click()
+  await page.getByRole('button', { name: 'Plum', exact: true }).click()
   await page.getByLabel('Variety').fill('Victoria')
   await page.getByRole('button', { name: 'Save' }).click()
 

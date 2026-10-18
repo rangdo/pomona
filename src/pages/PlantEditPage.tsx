@@ -6,11 +6,11 @@ import { processImage } from '../lib/image'
 import { useLiveQuery } from '../lib/hooks'
 import { Header } from '../components/Header'
 import { PhotoThumb } from '../components/PhotoThumb'
+import { SpeciesPicker } from '../components/SpeciesPicker'
 import {
   FRUITING_HABITS,
   MONTHS,
   POLLINATION_OPTIONS,
-  SPECIES,
   plantLabel,
 } from '../lib/plantMeta'
 import {
@@ -218,21 +218,7 @@ export function PlantEditPage() {
         </section>
 
         <section className={`${sectionClass} space-y-3`}>
-          <label className="block">
-            <span className={labelClass}>Species *</span>
-            <select
-              value={species}
-              onChange={(e) => setSpecies(e.target.value)}
-              className={inputClass}
-            >
-              <option value="">Choose species…</option>
-              {SPECIES.map((s) => (
-                <option key={s} value={s}>
-                  {s}
-                </option>
-              ))}
-            </select>
-          </label>
+          <SpeciesPicker value={species} onChange={setSpecies} />
           <label className="block">
             <span className={labelClass}>Variety</span>
             <input
