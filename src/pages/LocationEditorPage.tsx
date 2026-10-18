@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { db, type Location } from '../db/db'
 import { newId } from '../lib/ids'
-import { processLocationImage } from '../lib/image'
+import { isPdf, processLocationImage } from '../lib/image'
 import { AREA_COLORS } from '../lib/palette'
 import { useLiveQuery } from '../lib/hooks'
 import { Header } from '../components/Header'
@@ -30,6 +30,7 @@ export function LocationEditorPage() {
   const [name, setName] = useState('')
   const [color, setColor] = useState<number | null>(null)
   const [photo, setPhoto] = useState<NewPhoto | null>(null)
+  const [pdfOriginal, setPdfOriginal] = useState<Blob | null>(null)
   const [photoRemoved, setPhotoRemoved] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -68,6 +69,7 @@ export function LocationEditorPage() {
           if (prev) URL.revokeObjectURL(prev.url)
           return { full, thumb, url: URL.createObjectURL(full) }
         })
+        setPdfOriginal(isPdf(file) ? file : null)
         setPhotoRemoved(false)
       } catch (err) {
         console.error(err)
@@ -79,6 +81,7 @@ export function LocationEditorPage() {
   function clearPhoto() {
     if (photo) URL.revokeObjectURL(photo.url)
     setPhoto(null)
+    setPdfOriginal(null)
     setPhotoRemoved(false)
   }
 
@@ -107,6 +110,11 @@ export function LocationEditorPage() {
           name: trimmed,
           color: color ?? 0,
           imagePhotoId,
+          sourcePdf: photo
+            ? pdfOriginal ?? undefined
+            : photoRemoved
+              ? undefined
+              : existing?.sourcePdf,
           createdAt: existing?.createdAt ?? now,
         }
         await db.locations.put(location)

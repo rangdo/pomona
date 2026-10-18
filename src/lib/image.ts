@@ -42,19 +42,24 @@ export async function processImage(file: File): Promise<ProcessedImage> {
 }
 
 async function pdfFirstPageBitmap(file: File): Promise<ImageBitmap> {
+  const blob = await renderPdfFirstPage(file, 1600)
+  return createImageBitmap(blob)
+}
+
+export async function renderPdfFirstPage(source: Blob, targetWidth: number): Promise<Blob> {
   const [pdfjs, { default: workerUrl }] = await Promise.all([
     import('pdfjs-dist'),
     import('pdfjs-dist/build/pdf.worker.min.mjs?url'),
   ])
   pdfjs.GlobalWorkerOptions.workerSrc = workerUrl
 
-  const data = await file.arrayBuffer()
+  const data = await source.arrayBuffer()
   const task = pdfjs.getDocument({ data })
   const doc = await task.promise
   try {
     const page = await doc.getPage(1)
     const base = page.getViewport({ scale: 1 })
-    const scale = Math.min(4, 1600 / Math.max(base.width, base.height))
+    const scale = Math.min(12, Math.max(0.1, targetWidth / base.width))
     const viewport = page.getViewport({ scale })
     const canvas = document.createElement('canvas')
     canvas.width = Math.max(1, Math.round(viewport.width))
@@ -64,7 +69,13 @@ async function pdfFirstPageBitmap(file: File): Promise<ImageBitmap> {
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
     await page.render({ canvas, viewport }).promise
-    return await createImageBitmap(canvas)
+    return await new Promise<Blob>((resolve, reject) => {
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error('PDF render failed'))),
+        'image/jpeg',
+        0.9,
+      )
+    })
   } finally {
     await task.destroy()
   }

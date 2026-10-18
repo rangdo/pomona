@@ -54,6 +54,7 @@ export interface Location {
   name: string
   color: number
   imagePhotoId?: string
+  sourcePdf?: Blob
   createdAt: number
 }
 

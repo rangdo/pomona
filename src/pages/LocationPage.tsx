@@ -1,9 +1,10 @@
-import { useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { useLiveQuery } from '../lib/hooks'
+import { useLiveQuery, useObjectUrl } from '../lib/hooks'
 import { db, type Plant } from '../db/db'
 import { clampPin, isPlaced } from '../lib/pins'
 import { plantLabel } from '../lib/plantMeta'
+import { renderPdfFirstPage } from '../lib/image'
 import { useMapViewport } from '../lib/useMapViewport'
 import { Header } from '../components/Header'
 import { PhotoThumb } from '../components/PhotoThumb'
@@ -56,6 +57,45 @@ export function LocationPage() {
   const unpinned = locationPlants.filter((p) => !isPlaced(p))
   const pinned = locationPlants.filter(isPlaced)
   const imagePhotoId = location?.imagePhotoId
+  const sourcePdf = location?.sourcePdf
+
+  const mapPhoto = useLiveQuery(
+    async () => (imagePhotoId ? await db.photos.get(imagePhotoId) : undefined),
+    [imagePhotoId],
+  )
+  const [hiRes, setHiRes] = useState<Blob | null>(null)
+  const renderedWidth = useRef(0)
+  const renderVersion = useRef(0)
+  const mapUrl = useObjectUrl(hiRes ?? mapPhoto?.blob ?? mapPhoto?.thumb)
+
+  useEffect(() => {
+    setHiRes(null)
+    renderedWidth.current = 0
+  }, [imagePhotoId])
+
+  useEffect(() => {
+    if (!sourcePdf) return
+    const timer = window.setTimeout(() => {
+      void (async () => {
+        const layer = layerRef.current
+        if (!layer) return
+        const lw = layer.offsetWidth
+        const dpr = window.devicePixelRatio || 1
+        const needed = Math.min(6000, Math.ceil(lw * view.s * dpr))
+        if (needed <= renderedWidth.current + 50) return
+        const version = ++renderVersion.current
+        try {
+          const blob = await renderPdfFirstPage(sourcePdf, needed)
+          if (renderVersion.current !== version) return
+          renderedWidth.current = needed
+          setHiRes(blob)
+        } catch (err) {
+          console.error(err)
+        }
+      })()
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [sourcePdf, view.s, mapPhoto])
 
   function posOf(plant: Plant) {
     const pv = preview[plant.id]
@@ -220,8 +260,10 @@ export function LocationPage() {
                   transformOrigin: '0 0',
                 }}
               >
-                <PhotoThumb
-                  photoId={imagePhotoId}
+                <img
+                  src={mapUrl}
+                  alt=""
+                  draggable={false}
                   className="block w-full"
                   onLoad={recenter}
                 />
