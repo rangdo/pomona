@@ -7,10 +7,12 @@ export function PhotoThumb({
   photoId,
   className = '',
   style,
+  onLoad,
 }: {
   photoId?: string
   className?: string
   style?: CSSProperties
+  onLoad?: () => void
 }) {
   const photo = useLiveQuery(
     async () => (photoId ? await db.photos.get(photoId) : undefined),
@@ -25,6 +27,7 @@ export function PhotoThumb({
         draggable={false}
         className={`bg-stone-200 object-cover ${className}`}
         style={style}
+        onLoad={onLoad}
       />
     )
   }

@@ -19,8 +19,10 @@ hosted website is only a delivery mechanism for the app.
 - **Locations & pins** — name the areas of your garden ("Back garden",
   "Allotment"…), give each one a photo, satellite screenshot, sketch or a
   **garden plan PDF** (first page is rendered in-app), assign plants to them
-  and pin plants onto the image by dragging. Pins are optional; plants can
-  live in the journal without any location
+  and pin plants onto the image by dragging. The map is a pinch-to-zoom,
+  pan-around viewport — pins stay anchored to the plan at a constant
+  screen size, so labels stay readable at any zoom. Pins are optional;
+  plants can live in the journal without any location
 - **Observations** — take a photo (or pick from gallery), tag the plant part
   (blossom, fruit, leaf…), condition (healthy, pest damage…), treatments
   (pruned, fertilized…), plus fruit count, harvest weight and notes
