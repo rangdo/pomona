@@ -87,12 +87,18 @@ export class PomonaDB extends Dexie {
           delete plant.bedId
         })
       })
-    this.version(4)
+    this.version(4).stores({
+      plants: 'id, species, createdAt, locationId',
+    })
+    this.version(5)
       .stores({
         plants: 'id, species, createdAt, locationId',
       })
       .upgrade(async (tx) => {
         await tx.table('plants').toCollection().modify((plant) => {
+          if (typeof plant.name === 'string' && plant.name.trim()) {
+            plant.variety = plant.name.trim()
+          }
           delete plant.name
         })
       })
