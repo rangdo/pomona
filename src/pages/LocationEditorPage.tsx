@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { db, type Location } from '../db/db'
 import { newId } from '../lib/ids'
-import { processImage } from '../lib/image'
+import { processLocationImage } from '../lib/image'
 import { AREA_COLORS } from '../lib/palette'
 import { useLiveQuery } from '../lib/hooks'
 import { Header } from '../components/Header'
@@ -63,7 +63,7 @@ export function LocationEditorPage() {
     if (!file) return
     void (async () => {
       try {
-        const { full, thumb } = await processImage(file)
+        const { full, thumb } = await processLocationImage(file)
         setPhoto((prev) => {
           if (prev) URL.revokeObjectURL(prev.url)
           return { full, thumb, url: URL.createObjectURL(full) }
@@ -214,7 +214,7 @@ export function LocationEditorPage() {
           </div>
           <p className="mt-2 text-xs text-stone-400">
             A photo of this area lets you pin plants onto it — a satellite
-            screenshot or a sketch works too.
+            screenshot, a sketch or a garden plan PDF (first page) works too.
           </p>
           <input
             ref={cameraRef}
@@ -227,7 +227,7 @@ export function LocationEditorPage() {
           <input
             ref={galleryRef}
             type="file"
-            accept="image/*"
+            accept="image/*,application/pdf"
             className="hidden"
             onChange={handleFile}
           />
