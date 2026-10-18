@@ -74,7 +74,7 @@ test('locations: create with image, assign plant, pin by drag, persist, unassign
 
   await page.getByRole('button', { name: 'Arrange' }).click()
   const chip = page.getByRole('button', { name: /Apple/ })
-  const imgBox = await page.locator('[data-testid="location-image"]').boundingBox()
+  const imgBox = await page.locator('[data-testid="location-map-layer"]').boundingBox()
   const chipBox = await chip.boundingBox()
   await page.mouse.move(chipBox!.x + chipBox!.width / 2, chipBox!.y + chipBox!.height / 2)
   await page.mouse.down()
@@ -158,7 +158,7 @@ test('locations: PDF garden plan becomes the map and accepts pins', async ({ pag
 
   await page.getByRole('button', { name: 'Arrange' }).click()
   const chip = page.getByRole('button', { name: /Pear/ })
-  const imgBox = await page.locator('[data-testid="location-image"]').boundingBox()
+  const imgBox = await page.locator('[data-testid="location-map-layer"]').boundingBox()
   const chipBox = await chip.boundingBox()
   await page.mouse.move(chipBox!.x + chipBox!.width / 2, chipBox!.y + chipBox!.height / 2)
   await page.mouse.down()
@@ -167,4 +167,69 @@ test('locations: PDF garden plan becomes the map and accepts pins', async ({ pag
   })
   await page.mouse.up()
   await expect(page.locator('[aria-label="Pin Pear"]')).toBeVisible()
+})
+
+test('locations: zooming the map keeps pin screen size constant', async ({ page }) => {
+  await page.goto('/#/plants/new')
+  await page.getByRole('button', { name: 'Choose species…' }).click()
+  await page.getByRole('button', { name: 'Pear', exact: true }).click()
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByRole('heading', { name: 'Pear' })).toBeVisible()
+  await page.getByRole('button', { name: 'Back' }).click()
+  await page.getByRole('link', { name: 'Locations' }).click()
+  await page.getByRole('link', { name: 'Create your first location' }).click()
+  await page.getByLabel('Name *').fill('Zoom garden')
+  const [chooser] = await Promise.all([
+    page.waitForEvent('filechooser'),
+    page.getByRole('button', { name: 'Gallery' }).click(),
+  ])
+  await chooser.setFiles({
+    name: 'plan.pdf',
+    mimeType: 'application/pdf',
+    buffer: makeTestPdf(),
+  })
+  await expect(page.getByAltText('Location preview')).toBeVisible()
+  await page.getByRole('button', { name: 'Save' }).click()
+  await page.getByRole('button', { name: 'Back' }).click()
+  await page.getByRole('link', { name: /Pear/ }).click()
+  await page.getByRole('link', { name: 'Edit plant' }).click()
+  await page.getByLabel('Location').selectOption({ label: 'Zoom garden' })
+  await page.getByRole('button', { name: 'Save' }).click()
+  await page.getByRole('button', { name: 'Back' }).click()
+  await page.getByRole('link', { name: 'Locations' }).click()
+  await page.getByRole('link', { name: /Zoom garden/ }).click()
+
+  await page.getByRole('button', { name: 'Arrange' }).click()
+  const chip = page.getByRole('button', { name: /Pear/ })
+  const layer = page.locator('[data-testid="location-map-layer"]')
+  const imgBox = await layer.boundingBox()
+  const chipBox = await chip.boundingBox()
+  await page.mouse.move(chipBox!.x + chipBox!.width / 2, chipBox!.y + chipBox!.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(imgBox!.x + imgBox!.width * 0.5, imgBox!.y + imgBox!.height * 0.5, {
+    steps: 8,
+  })
+  await page.mouse.up()
+  const pin = page.locator('[aria-label="Pin Pear"]')
+  await expect(pin).toBeVisible()
+
+  const pinBefore = await pin.boundingBox()
+  const layerBefore = await layer.boundingBox()
+  await page.getByRole('button', { name: 'Zoom in' }).click()
+  await page.getByRole('button', { name: 'Zoom in' }).click()
+  const layerAfter = await layer.boundingBox()
+  const pinAfter = await pin.boundingBox()
+  expect(layerAfter!.width).toBeGreaterThan(layerBefore!.width * 2)
+  expect(layerAfter!.width).toBeLessThan(layerBefore!.width * 2.6)
+  expect(pinAfter!.width).toBeGreaterThan(pinBefore!.width - 2)
+  expect(pinAfter!.width).toBeLessThan(pinBefore!.width + 2)
+
+  await page.getByRole('button', { name: 'Reset view' }).click()
+  const layerReset = await layer.boundingBox()
+  expect(layerReset!.width).toBeCloseTo(layerBefore!.width, 0)
+
+  await page.mouse.move(imgBox!.x + imgBox!.width * 0.5, imgBox!.y + imgBox!.height * 0.5)
+  await page.mouse.wheel(0, -300)
+  const layerWheel = await layer.boundingBox()
+  expect(layerWheel!.width).toBeGreaterThan(layerBefore!.width * 1.3)
 })

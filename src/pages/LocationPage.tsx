@@ -1,9 +1,10 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, type CSSProperties } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from '../lib/hooks'
 import { db, type Plant } from '../db/db'
 import { clampPin, isPlaced } from '../lib/pins'
 import { plantLabel } from '../lib/plantMeta'
+import { useMapViewport } from '../lib/useMapViewport'
 import { Header } from '../components/Header'
 import { PhotoThumb } from '../components/PhotoThumb'
 import { sectionClass } from '../components/styles'
@@ -38,7 +39,16 @@ export function LocationPage() {
   const [dragPlantId, setDragPlantId] = useState<string | null>(null)
   const [overImage, setOverImage] = useState(false)
 
-  const wrapRef = useRef<HTMLDivElement>(null)
+  const {
+    attachViewport,
+    layerRef,
+    view,
+    pinScale,
+    viewportHandlers,
+    zoomBy,
+    reset,
+    recenter,
+  } = useMapViewport()
   const pinDrag = useRef<PinDrag | null>(null)
   const trayDrag = useRef<{ plantId: string } | null>(null)
 
@@ -53,7 +63,7 @@ export function LocationPage() {
   }
 
   function onPinPointerDown(e: React.PointerEvent<HTMLElement>, plant: Plant) {
-    const rect = wrapRef.current?.getBoundingClientRect()
+    const rect = layerRef.current?.getBoundingClientRect()
     if (!rect) return
     pinDrag.current = {
       plantId: plant.id,
@@ -110,7 +120,7 @@ export function LocationPage() {
 
   function onTrayPointerMove(e: React.PointerEvent<HTMLElement>) {
     if (!trayDrag.current) return
-    const rect = wrapRef.current?.getBoundingClientRect()
+    const rect = layerRef.current?.getBoundingClientRect()
     if (!rect) return
     setOverImage(
       e.clientX >= rect.left &&
@@ -124,7 +134,7 @@ export function LocationPage() {
     const d = trayDrag.current
     trayDrag.current = null
     setDragPlantId(null)
-    const rect = wrapRef.current?.getBoundingClientRect()
+    const rect = layerRef.current?.getBoundingClientRect()
     setOverImage(false)
     if (!d || !rect) return
     const x = clampPin((e.clientX - rect.left) / rect.width)
@@ -191,69 +201,121 @@ export function LocationPage() {
 
       <div className="p-3">
         {imagePhotoId ? (
-          <div
-            ref={wrapRef}
-            data-testid="location-image"
-            className={`relative overflow-hidden rounded-2xl border-2 border-stone-200 ${
-              overImage ? 'ring-4 ring-lime-600' : ''
-            }`}
-          >
-            <PhotoThumb photoId={imagePhotoId} className="block w-full" />
-            {pinned.map((p) => {
-              const pos = posOf(p)
-              const inner = (
-                <>
-                  <PhotoThumb
-                    photoId={p.photoId}
-                    className="rounded-full"
-                    style={{ width: 40, height: 40 }}
-                  />
-                  <span
-                    className="max-w-28 truncate rounded-full bg-stone-900/70 px-1.5 py-0.5 text-[10px] font-semibold text-white"
-                    style={arrange ? undefined : { pointerEvents: 'none' }}
-                  >
-                    {plantLabel(p)}
-                  </span>
-                </>
-              )
-              const cls = `absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-0.5 ${
-                arrange ? 'cursor-grab active:cursor-grabbing' : ''
-              } ${selectedPinId === p.id ? 'rounded-full ring-4 ring-lime-600' : ''}`
-              const style = {
-                left: `${pos.x * 100}%`,
-                top: `${pos.y * 100}%`,
-                touchAction: arrange ? ('none' as const) : ('auto' as const),
-                zIndex: preview[p.id] ? 10 : undefined,
-              }
-              if (arrange) {
-                return (
-                  <span
-                    key={p.id}
-                    aria-label={`Pin ${plantLabel(p)}`}
-                    className={cls}
-                    style={style}
-                    onPointerDown={(e) => onPinPointerDown(e, p)}
-                    onPointerMove={(e) => onPinPointerMove(e, p)}
-                    onPointerUp={(e) => void onPinPointerUp(e, p)}
-                    onPointerCancel={(e) => void onPinPointerUp(e, p)}
-                  >
-                    {inner}
-                  </span>
-                )
-              }
-              return (
-                <Link
-                  key={p.id}
-                  to={`/plants/${p.id}`}
-                  aria-label={`Pin ${plantLabel(p)}`}
-                  className={cls}
-                  style={style}
+          <>
+            <div
+              ref={attachViewport}
+              data-testid="location-image"
+              className={`relative h-[min(70vh,640px)] overflow-hidden rounded-2xl border-2 border-stone-200 bg-stone-100 ${
+                overImage ? 'ring-4 ring-lime-600' : ''
+              }`}
+              style={{ touchAction: 'none' }}
+              {...viewportHandlers}
+            >
+              <div
+                ref={layerRef}
+                data-testid="location-map-layer"
+                className="absolute left-0 top-0 w-full"
+                style={{
+                  transform: `translate(${view.tx}px, ${view.ty}px) scale(${view.s})`,
+                  transformOrigin: '0 0',
+                }}
+              >
+                <PhotoThumb
+                  photoId={imagePhotoId}
+                  className="block w-full"
+                  onLoad={recenter}
+                />
+                {pinned.map((p) => {
+                  const pos = posOf(p)
+                  const inner = (
+                    <>
+                      <PhotoThumb
+                        photoId={p.photoId}
+                        className="rounded-full"
+                        style={{ width: 40, height: 40 }}
+                      />
+                      <span
+                        className="max-w-28 truncate rounded-full bg-stone-900/70 px-1.5 py-0.5 text-[10px] font-semibold text-white"
+                        style={arrange ? undefined : { pointerEvents: 'none' }}
+                      >
+                        {plantLabel(p)}
+                      </span>
+                    </>
+                  )
+                  const cls = `absolute flex flex-col items-center gap-0.5 ${
+                    arrange ? 'cursor-grab active:cursor-grabbing' : ''
+                  } ${selectedPinId === p.id ? 'rounded-full ring-4 ring-lime-600' : ''}`
+                  const style: CSSProperties = {
+                    left: `${pos.x * 100}%`,
+                    top: `${pos.y * 100}%`,
+                    transform: `translate(-50%, -50%) scale(${pinScale})`,
+                    touchAction: arrange ? ('none' as const) : ('auto' as const),
+                    zIndex: preview[p.id] ? 10 : undefined,
+                  }
+                  if (arrange) {
+                    return (
+                      <span
+                        key={p.id}
+                        data-pin
+                        aria-label={`Pin ${plantLabel(p)}`}
+                        className={cls}
+                        style={style}
+                        onPointerDown={(e) => onPinPointerDown(e, p)}
+                        onPointerMove={(e) => onPinPointerMove(e, p)}
+                        onPointerUp={(e) => void onPinPointerUp(e, p)}
+                        onPointerCancel={(e) => void onPinPointerUp(e, p)}
+                      >
+                        {inner}
+                      </span>
+                    )
+                  }
+                  return (
+                    <Link
+                      key={p.id}
+                      to={`/plants/${p.id}`}
+                      data-pin
+                      aria-label={`Pin ${plantLabel(p)}`}
+                      className={cls}
+                      style={style}
+                    >
+                      {inner}
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+            <div className="mt-2 flex items-center justify-between gap-2">
+              <p className="text-xs text-stone-400">
+                Pinch, scroll or use the buttons to zoom; drag to pan.
+              </p>
+              <div className="flex shrink-0 gap-1.5">
+                <button
+                  type="button"
+                  aria-label="Zoom in"
+                  onClick={() => zoomBy(1.5)}
+                  className="flex size-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-semibold text-stone-600 shadow-sm active:bg-stone-200"
                 >
-                  {inner}
-                </Link>
-              )
-            })}
-          </div>
+                  +
+                </button>
+                <button
+                  type="button"
+                  aria-label="Zoom out"
+                  onClick={() => zoomBy(1 / 1.5)}
+                  className="flex size-9 items-center justify-center rounded-full border border-stone-300 bg-white text-lg font-semibold text-stone-600 shadow-sm active:bg-stone-200"
+                >
+                  −
+                </button>
+                <button
+                  type="button"
+                  aria-label="Reset view"
+                  onClick={reset}
+                  className="flex h-9 items-center rounded-full border border-stone-300 bg-white px-3 text-xs font-semibold text-stone-600 shadow-sm active:bg-stone-200"
+                >
+                  Fit
+                </button>
+              </div>
+            </div>
+          </>
         ) : (
           <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-8 text-center">
             <p className="font-medium">No image yet</p>
