@@ -15,7 +15,8 @@ test('locations: create with image, assign plant, pin by drag, persist, unassign
   const photo = await makeTestPhoto()
 
   await page.goto('/#/plants/new')
-  await page.getByLabel('Species *').selectOption('Apple')
+  await page.getByRole('button', { name: 'Choose species…' }).click()
+  await page.getByRole('button', { name: 'Apple', exact: true }).click()
   await page.getByRole('button', { name: 'Save' }).click()
   await expect(page.getByRole('heading', { name: 'Apple' })).toBeVisible()
 
