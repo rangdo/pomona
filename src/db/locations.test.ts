@@ -7,9 +7,9 @@ beforeAll(async () => {
   await db.open()
 })
 
-describe('v2 → v4 migration', () => {
-  it('deletes beds, strips bedId and name, preserves plants and observations', async () => {
-    const name = 'pomona-migration-v4-test'
+describe('v2 → v5 migration', () => {
+  it('deletes beds, strips bedId, rescues name into variety, preserves observations', async () => {
+    const name = 'pomona-migration-v5-test'
     const legacy = new Dexie(name)
     legacy.version(1).stores({
       plants: 'id, name, createdAt',
@@ -32,14 +32,17 @@ describe('v2 → v4 migration', () => {
       h: 120,
       createdAt: 1,
     })
-    await legacy.table('plants').add({
-      id: 'p1',
-      name: 'Old Plum',
-      variety: 'Victoria',
-      location: 'row 2',
-      bedId: 'bed1',
-      createdAt: 1,
-    })
+    await legacy.table('plants').bulkAdd([
+      {
+        id: 'p1',
+        name: 'Old Plum',
+        variety: 'Victoria',
+        location: 'row 2',
+        bedId: 'bed1',
+        createdAt: 1,
+      },
+      { id: 'p2', name: 'Bramley 20', createdAt: 2 },
+    ])
     await legacy.table('observations').add({
       id: 'o1',
       plantId: 'p1',
@@ -56,9 +59,13 @@ describe('v2 → v4 migration', () => {
 
     const plant = await upgraded.plants.get('p1')
     expect(plant && 'name' in plant).toBe(false)
-    expect(plant?.variety).toBe('Victoria')
+    expect(plant?.variety).toBe('Old Plum')
     expect(plant?.species).toBeUndefined()
     expect(plant && 'bedId' in plant).toBe(false)
+
+    const plant2 = await upgraded.plants.get('p2')
+    expect(plant2?.variety).toBe('Bramley 20')
+    expect(plant2 && 'name' in plant2).toBe(false)
 
     expect(upgraded.tables.map((t) => t.name)).not.toContain('beds')
     expect(await upgraded.locations.count()).toBe(0)
@@ -67,6 +74,26 @@ describe('v2 → v4 migration', () => {
     expect(obs?.parts).toEqual(['fruit'])
 
     upgraded.close()
+  })
+
+  it('leaves records that already have no name untouched', async () => {
+    const name = 'pomona-name-idempotent-test'
+    const first = new PomonaDB(name)
+    await first.open()
+    await first.plants.add({
+      id: 'ip1',
+      species: 'Plum',
+      variety: 'Keep me',
+      createdAt: Date.now(),
+    })
+    first.close()
+
+    const second = new PomonaDB(name)
+    await second.open()
+    const plant = await second.plants.get('ip1')
+    expect(plant?.variety).toBe('Keep me')
+    expect(plant?.species).toBe('Plum')
+    second.close()
   })
 })
 
