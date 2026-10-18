@@ -17,9 +17,10 @@ hosted website is only a delivery mechanism for the app.
   (spur or tip bearing) — all shown on the plant page and ready for later
   analysis
 - **Locations & pins** — name the areas of your garden ("Back garden",
-  "Allotment"…), give each one a photo, assign plants to them and pin plants
-  onto the photo by dragging. Pins are optional; plants can live in the
-  journal without any location
+  "Allotment"…), give each one a photo, satellite screenshot, sketch or a
+  **garden plan PDF** (first page is rendered in-app), assign plants to them
+  and pin plants onto the image by dragging. Pins are optional; plants can
+  live in the journal without any location
 - **Observations** — take a photo (or pick from gallery), tag the plant part
   (blossom, fruit, leaf…), condition (healthy, pest damage…), treatments
   (pruned, fertilized…), plus fruit count, harvest weight and notes
