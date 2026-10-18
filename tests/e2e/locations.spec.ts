@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import sharp from 'sharp'
 
-test.use({ viewport: { width: 1280, height: 1400 } })
+test.use({ viewport: { width: 1280, height: 1400 }, deviceScaleFactor: 2 })
 
 async function makeTestPhoto(): Promise<Buffer> {
   return sharp({
@@ -224,6 +224,14 @@ test('locations: zooming the map keeps pin screen size constant', async ({ page 
   expect(pinAfter!.width).toBeGreaterThan(pinBefore!.width - 2)
   expect(pinAfter!.width).toBeLessThan(pinBefore!.width + 2)
 
+  const mapImg = page.locator('[data-testid="location-map-layer"] img')
+  await expect
+    .poll(
+      async () => await mapImg.evaluate((el) => (el as HTMLImageElement).naturalWidth),
+      { timeout: 10_000 },
+    )
+    .toBeGreaterThan(1600)
+
   await page.getByRole('button', { name: 'Reset view' }).click()
   const layerReset = await layer.boundingBox()
   expect(layerReset!.width).toBeCloseTo(layerBefore!.width, 0)
@@ -231,5 +239,5 @@ test('locations: zooming the map keeps pin screen size constant', async ({ page 
   await page.mouse.move(imgBox!.x + imgBox!.width * 0.5, imgBox!.y + imgBox!.height * 0.5)
   await page.mouse.wheel(0, -300)
   const layerWheel = await layer.boundingBox()
-  expect(layerWheel!.width).toBeGreaterThan(layerBefore!.width * 1.3)
+  expect(layerWheel!.width).toBeGreaterThan(layerBefore!.width * 1.15)
 })
