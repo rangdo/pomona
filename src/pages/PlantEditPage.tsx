@@ -115,6 +115,7 @@ export function PlantEditPage() {
             createdAt: now,
           })
         }
+        const sameLocation = (existing?.locationId ?? '') === locationId
         const plant: Plant = {
           id: plantId,
           species,
@@ -125,6 +126,9 @@ export function PlantEditPage() {
           fruitingHabit: fruitingHabit || undefined,
           plantedDate: plantedDate || undefined,
           locationId: locationId || undefined,
+          // pins are relative to the location's map, so they only survive if it is unchanged
+          pinX: sameLocation ? existing?.pinX : undefined,
+          pinY: sameLocation ? existing?.pinY : undefined,
           photoId,
           createdAt: existing?.createdAt ?? now,
         }

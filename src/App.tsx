@@ -9,6 +9,7 @@ import { LocationsPage } from './pages/LocationsPage'
 import { LocationPage } from './pages/LocationPage'
 import { LocationEditorPage } from './pages/LocationEditorPage'
 import { InstallBanner } from './components/InstallBanner'
+import { UpdateBanner } from './components/UpdateBanner'
 import { requestPersistentStorage } from './db/db'
 
 export default function App() {
@@ -35,6 +36,7 @@ export default function App() {
         </Routes>
       </div>
       <InstallBanner />
+      <UpdateBanner />
     </HashRouter>
   )
 }

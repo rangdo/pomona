@@ -92,8 +92,16 @@ export function LocationEditorPage() {
     try {
       const now = Date.now()
       const locationId = editing ? (id as string) : newId()
-      await db.transaction('rw', db.photos, db.locations, async () => {
+      await db.transaction('rw', db.photos, db.locations, db.plants, async () => {
         let imagePhotoId = photoRemoved ? undefined : existing?.imagePhotoId
+        if (photoRemoved && !photo && existing?.imagePhotoId) {
+          await db.photos.delete(existing.imagePhotoId)
+          // pins only make sense on a map; without one they would silently linger
+          await db.plants.where('locationId').equals(locationId).modify((plant) => {
+            delete plant.pinX
+            delete plant.pinY
+          })
+        }
         if (photo) {
           if (existing?.imagePhotoId) await db.photos.delete(existing.imagePhotoId)
           imagePhotoId = newId()

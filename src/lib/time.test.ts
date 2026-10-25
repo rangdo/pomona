@@ -5,6 +5,7 @@ import {
   formatTime,
   monthKey,
   monthLabel,
+  parseLocalDate,
   relTime,
 } from './time'
 
@@ -47,5 +48,15 @@ describe('formatTime', () => {
   it('renders hour and minute', () => {
     const ts = new Date(2026, 0, 1, 9, 5).getTime()
     expect(formatTime(ts)).toMatch(/09[:.]?\s?05|9[:.]?\s?05/)
+  })
+})
+
+describe('parseLocalDate', () => {
+  it('reads a date-input value as local midnight', () => {
+    const d = parseLocalDate('2024-03-15')
+    expect(d.getFullYear()).toBe(2024)
+    expect(d.getMonth()).toBe(2)
+    expect(d.getDate()).toBe(15)
+    expect(d.getHours()).toBe(0)
   })
 })

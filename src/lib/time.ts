@@ -35,3 +35,9 @@ export function monthLabel(key: string): string {
 export function fmtWeight(g: number): string {
   return g >= 1000 ? `${(g / 1000).toFixed(2)} kg` : `${g} g`
 }
+
+// `new Date('YYYY-MM-DD')` parses as UTC midnight, which is the previous day west of UTC
+export function parseLocalDate(isoDate: string): Date {
+  const [y, m, d] = isoDate.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}

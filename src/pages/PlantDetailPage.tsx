@@ -2,16 +2,12 @@ import { useMemo } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useLiveQuery } from '../lib/hooks'
 import { db, type Observation } from '../db/db'
-import { formatDate, formatTime, monthKey, monthLabel } from '../lib/time'
+import { fmtWeight, formatDate, formatTime, monthKey, monthLabel, parseLocalDate } from '../lib/time'
 import { plantLabel, harvestLabel } from '../lib/plantMeta'
 import { Header } from '../components/Header'
 import { PhotoThumb } from '../components/PhotoThumb'
 import { ChipLabel } from '../components/Chips'
 import { CameraIcon, PencilIcon, TrashIcon } from '../components/icons'
-
-function fmtWeight(g: number): string {
-  return g >= 1000 ? `${(g / 1000).toFixed(2)} kg` : `${g} g`
-}
 
 export function PlantDetailPage() {
   const { id = '' } = useParams()
@@ -25,9 +21,10 @@ export function PlantDetailPage() {
     () => db.observations.where('plantId').equals(id).sortBy('timestamp'),
     [id],
   )
-  const sorted: Observation[] | undefined = observations
-    ? [...observations].reverse()
-    : undefined
+  const sorted: Observation[] | undefined = useMemo(
+    () => (observations ? [...observations].reverse() : undefined),
+    [observations],
+  )
 
   const groups = useMemo(() => {
     if (!sorted) return undefined
@@ -66,7 +63,7 @@ export function PlantDetailPage() {
   }
 
   const plantedLine = plant.plantedDate
-    ? `planted ${new Date(plant.plantedDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}`
+    ? `planted ${parseLocalDate(plant.plantedDate).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}`
     : undefined
   const harvest = harvestLabel(plant)
   const facts: Array<[string, string]> = [

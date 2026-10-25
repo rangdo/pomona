@@ -110,9 +110,19 @@ test('locations: create with image, assign plant, pin by drag, persist, unassign
   await page.getByRole('link', { name: 'Pin Apple' }).click()
   await expect(page.getByRole('heading', { name: 'Apple' })).toBeVisible()
 
+  // editing an unrelated field must not drop the pin
+  await page.getByRole('link', { name: 'Edit plant' }).click()
+  await page.getByLabel('Variety').fill('Cox')
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByRole('heading', { name: 'Apple · Cox' })).toBeVisible()
+
   await page.getByRole('button', { name: 'Back' }).click()
   await page.getByRole('link', { name: 'Locations' }).click()
   await page.getByRole('link', { name: /Back garden/ }).click()
+  const pinAfterEdit = page.locator('[aria-label="Pin Apple · Cox"]')
+  await expect(pinAfterEdit).toBeVisible()
+  const leftAfterEdit = await pinAfterEdit.evaluate((el) => (el as HTMLElement).style.left)
+  expect(parseFloat(leftAfterEdit)).toBeCloseTo(parseFloat(leftAfter), 5)
   await page.getByRole('link', { name: 'Edit location' }).click()
   await page.once('dialog', (dialog) => void dialog.accept())
   await page.getByRole('button', { name: 'Delete location' }).click()

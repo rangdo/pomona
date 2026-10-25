@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { db, type Observation } from '../db/db'
 import { newId } from '../lib/ids'
 import { processImage } from '../lib/image'
+import { readPhotoMeta } from '../lib/exif'
 import { useLiveQuery } from '../lib/hooks'
 import { Header } from '../components/Header'
 import { PhotoThumb } from '../components/PhotoThumb'
@@ -20,6 +21,7 @@ interface NewPhoto {
   full: Blob
   thumb: Blob
   url: string
+  takenAt: number
 }
 
 interface Selections {
@@ -107,10 +109,11 @@ export function ObservationEditPage() {
     if (!file) return
     void (async () => {
       try {
+        const { takenAt } = await readPhotoMeta(file)
         const { full, thumb } = await processImage(file)
         setNewPhoto((prev) => {
           if (prev) URL.revokeObjectURL(prev.url)
-          return { full, thumb, url: URL.createObjectURL(full) }
+          return { full, thumb, url: URL.createObjectURL(full), takenAt }
         })
         setPhotoRemoved(false)
       } catch (err) {
@@ -155,7 +158,7 @@ export function ObservationEditPage() {
             id: photoId,
             blob: newPhoto.full,
             thumb: newPhoto.thumb,
-            takenAt: now,
+            takenAt: newPhoto.takenAt,
             createdAt: now,
           })
         } else if (photoRemoved) {
