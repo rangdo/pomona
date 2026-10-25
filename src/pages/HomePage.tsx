@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useLiveQuery } from '../lib/hooks'
 import { db } from '../db/db'
-import { relTime } from '../lib/time'
+import { formatDate, formatTime, relTime } from '../lib/time'
 import { plantLabel } from '../lib/plantMeta'
 import { PhotoThumb } from '../components/PhotoThumb'
 import { ChevronRightIcon, CameraIcon, PlusIcon, MapIcon } from '../components/icons'
@@ -86,6 +86,10 @@ export function HomePage() {
           })}
         </ul>
       )}
+
+      <p className="px-4 pt-6 text-center text-[10px] text-stone-400">
+        v {__APP_VERSION__} · built {formatDate(__BUILD_TIME__)}, {formatTime(__BUILD_TIME__)}
+      </p>
 
       {list && list.length > 0 && (
         <Link
