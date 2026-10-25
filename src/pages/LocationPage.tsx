@@ -212,8 +212,8 @@ export function LocationPage() {
   }
 
   const arrangeBtn = arrange
-    ? 'min-h-9 rounded-full bg-lime-700 px-3.5 text-sm font-semibold text-white active:bg-lime-800'
-    : 'min-h-9 rounded-full border border-stone-300 bg-white px-3.5 text-sm font-semibold text-stone-700 active:bg-stone-200'
+    ? 'min-h-9 w-24 rounded-full bg-lime-700 px-3.5 text-sm font-semibold text-white active:bg-lime-800'
+    : 'min-h-9 w-24 rounded-full border border-stone-300 bg-white px-3.5 text-sm font-semibold text-stone-700 active:bg-stone-200'
 
   return (
     <>
@@ -226,15 +226,18 @@ export function LocationPage() {
             <button type="button" onClick={() => setArrange((a) => !a)} className={arrangeBtn}>
               {arrange ? 'Done' : 'Arrange'}
             </button>
-            {!arrange && (
-              <Link
-                to={`/locations/${id}/edit`}
-                aria-label="Edit location"
-                className="flex size-10 items-center justify-center rounded-full text-stone-500 active:bg-stone-200"
-              >
-                <PencilIcon />
-              </Link>
-            )}
+            {/* hidden rather than removed in arrange mode, so the buttons don't shift */}
+            <Link
+              to={`/locations/${id}/edit`}
+              aria-label="Edit location"
+              aria-hidden={arrange}
+              tabIndex={arrange ? -1 : undefined}
+              className={`flex size-10 items-center justify-center rounded-full text-stone-500 active:bg-stone-200 ${
+                arrange ? 'invisible' : ''
+              }`}
+            >
+              <PencilIcon />
+            </Link>
           </div>
         }
       />

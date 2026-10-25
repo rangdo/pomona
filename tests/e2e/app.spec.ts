@@ -87,7 +87,7 @@ test('full journal workflow: create, observe, edit, delete', async ({ page }) =>
   await expect(page.getByText('No plants yet')).toBeVisible()
 })
 
-test('every page has a one-tap Home link', async ({ page }) => {
+test('every page has a one-tap Home link in the same place', async ({ page }) => {
   await page.goto('/#/plants/new')
   await page.getByRole('button', { name: 'Choose species…' }).click()
   await page.getByRole('button', { name: 'Pear', exact: true }).click()
@@ -120,9 +120,24 @@ test('every page has a one-tap Home link', async ({ page }) => {
     locationPath,
     `${locationPath}/edit`,
   ]
+  let homeBox: { x: number; y: number } | undefined
   for (const path of paths) {
     await page.goto(`/#${path}`)
-    await page.getByRole('link', { name: 'Home' }).click()
+    const home = page.getByRole('link', { name: 'Home' })
+    const box = (await home.boundingBox())!
+    homeBox ??= box
+    expect({ x: box.x, y: box.y }, `Home button position on ${path}`).toEqual({
+      x: homeBox.x,
+      y: homeBox.y,
+    })
+    await home.click()
     await expect(page.getByRole('heading', { name: 'Pomona' }), path).toBeVisible()
   }
+
+  // toggling arrange mode must not shift the header buttons
+  await page.goto(`/#${locationPath}`)
+  const arrangeBox = await page.getByRole('button', { name: 'Arrange' }).boundingBox()
+  await page.getByRole('button', { name: 'Arrange' }).click()
+  const doneBox = await page.getByRole('button', { name: 'Done' }).boundingBox()
+  expect(doneBox).toEqual(arrangeBox)
 })
