@@ -39,6 +39,15 @@ export function ChevronLeftIcon({ size = 22 }: { size?: number }) {
   )
 }
 
+export function HomeIcon({ size = 20 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...base}>
+      <path d="M3 10.5 12 3l9 7.5" />
+      <path d="M5 9v11h5v-6h4v6h5V9" />
+    </svg>
+  )
+}
+
 export function PencilIcon({ size = 18 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" {...base}>

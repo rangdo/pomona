@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ChevronLeftIcon } from './icons'
+import { Link, useNavigate } from 'react-router-dom'
+import { ChevronLeftIcon, HomeIcon } from './icons'
 
 export function Header({
   title,
@@ -26,6 +26,13 @@ export function Header({
           <ChevronLeftIcon />
         </button>
       )}
+      <Link
+        to="/"
+        aria-label="Home"
+        className="flex size-10 shrink-0 items-center justify-center rounded-full text-stone-500 active:bg-stone-200"
+      >
+        <HomeIcon />
+      </Link>
       <div className="min-w-0 flex-1">
         <h1 className="truncate text-lg font-bold leading-tight">{title}</h1>
         {subtitle && <p className="truncate text-xs text-stone-500">{subtitle}</p>}

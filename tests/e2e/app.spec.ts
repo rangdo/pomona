@@ -86,3 +86,43 @@ test('full journal workflow: create, observe, edit, delete', async ({ page }) =>
   await page.getByRole('button', { name: 'Delete plant' }).click()
   await expect(page.getByText('No plants yet')).toBeVisible()
 })
+
+test('every page has a one-tap Home link', async ({ page }) => {
+  await page.goto('/#/plants/new')
+  await page.getByRole('button', { name: 'Choose species…' }).click()
+  await page.getByRole('button', { name: 'Pear', exact: true }).click()
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByRole('heading', { name: 'Pear' })).toBeVisible()
+  const plantPath = new URL(page.url()).hash.slice(1)
+  const plantId = plantPath.split('/').pop()
+
+  await page.getByRole('link', { name: /New observation/i }).click()
+  await page.getByPlaceholder('Anything worth remembering…').fill('nav test')
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+  await page.getByRole('link', { name: 'Edit observation' }).click()
+  const obsPath = new URL(page.url()).hash.slice(1)
+
+  await page.goto('/#/locations/new')
+  await page.getByLabel('Name *').fill('Orchard')
+  await page.getByRole('button', { name: 'Save' }).click()
+  await expect(page.getByRole('heading', { name: 'Orchard' })).toBeVisible()
+  const locationPath = new URL(page.url()).hash.slice(1)
+
+  const paths = [
+    plantPath,
+    `${plantPath}/edit`,
+    '/plants/new',
+    '/capture',
+    `/capture/${plantId}`,
+    obsPath,
+    '/locations',
+    '/locations/new',
+    locationPath,
+    `${locationPath}/edit`,
+  ]
+  for (const path of paths) {
+    await page.goto(`/#${path}`)
+    await page.getByRole('link', { name: 'Home' }).click()
+    await expect(page.getByRole('heading', { name: 'Pomona' }), path).toBeVisible()
+  }
+})

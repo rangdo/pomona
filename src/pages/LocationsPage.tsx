@@ -4,7 +4,7 @@ import { db } from '../db/db'
 import { AREA_COLORS } from '../lib/palette'
 import { plantLabel } from '../lib/plantMeta'
 import { PhotoThumb } from '../components/PhotoThumb'
-import { ChevronRightIcon, PlusIcon } from '../components/icons'
+import { ChevronRightIcon, HomeIcon, PlusIcon } from '../components/icons'
 
 export function LocationsPage() {
   const locations = useLiveQuery(() => db.locations.toArray(), [])
@@ -25,12 +25,21 @@ export function LocationsPage() {
           <h1 className="text-2xl font-extrabold tracking-tight">Locations</h1>
           <p className="text-xs text-stone-500">areas of your garden</p>
         </div>
-        <Link
-          to="/locations/new"
-          className="flex min-h-10 items-center gap-1.5 rounded-full bg-lime-700 px-4 text-sm font-semibold text-white shadow-sm active:bg-lime-800"
-        >
-          <PlusIcon size={16} /> Add
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/"
+            aria-label="Home"
+            className="flex size-10 items-center justify-center rounded-full border border-stone-300 bg-white text-stone-600 shadow-sm active:bg-stone-200"
+          >
+            <HomeIcon />
+          </Link>
+          <Link
+            to="/locations/new"
+            className="flex min-h-10 items-center gap-1.5 rounded-full bg-lime-700 px-4 text-sm font-semibold text-white shadow-sm active:bg-lime-800"
+          >
+            <PlusIcon size={16} /> Add
+          </Link>
+        </div>
       </header>
 
       {list === undefined && (
